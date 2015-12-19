@@ -234,7 +234,7 @@ public class Cluster {
             if (allChangedSameValues)
                 return SendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
             else
-                return SendPacket(new MoveStepperArray(changedSteppers), guaranteed);
+                return SendPacket(new MoveSteppersArray(changedSteppers), guaranteed);
         }
 
         return SendPacket(new MoveAllSteppersArray(changedSteppers), guaranteed);

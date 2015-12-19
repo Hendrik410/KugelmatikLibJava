@@ -9,19 +9,19 @@ import java.security.InvalidParameterException;
 
 /**
  * Created by Hendrik on 30.08.2015.
- * Befehl zum Bewegen mehrerer Kugeln in jeweils eigene Höhen mit eigener waitTime
+ * Befehl zum Bewegen mehrerer Kugeln in jeweils eigene Hï¿½hen mit eigener waitTime
  */
-public class MoveStepperArray extends Packet {
+public class MoveSteppersArray extends Packet {
 
     private Item[] items;
 
-    public MoveStepperArray(Item[] items){
+    public MoveSteppersArray(Item[] items){
         if(items.length > Byte.MAX_VALUE || items.length == 0)
             throw new InvalidParameterException("items has invalid size (" + items.length + ")");
 
         this.items = items;
     }
-    public MoveStepperArray(Stepper[] steppers){
+    public MoveSteppersArray(Stepper[] steppers){
         if(steppers.length > Byte.MAX_VALUE || steppers.length == 0)
             throw new InvalidParameterException("items has invalid size (" + items.length + ")");
 
