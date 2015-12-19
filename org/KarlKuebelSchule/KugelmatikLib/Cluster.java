@@ -48,10 +48,10 @@ public class Cluster {
      * @param x Die x-Koordinate der Position des Clusters in der Kugelmatik
      * @param y Die y-Koordinate der Position der Clusters in der Kugelmatik
      */
-    public Cluster(@NotNull Kugelmatik kugelmatik, @NotNull InetAddress address, int x, int y){
-        if(x < 0)
+    public Cluster(@NotNull Kugelmatik kugelmatik, @NotNull InetAddress address, int x, int y) {
+        if (x < 0)
             throw new IllegalArgumentException("The argument 'x' is out of range.");
-        if(y < 0)
+        if (y < 0)
             throw new IllegalArgumentException("The argument 'y' is out of range.");
 
 
@@ -63,8 +63,10 @@ public class Cluster {
         this.y = y;
 
         steppers = new Stepper[Width * Height];
-        for(byte sX = 0; sX < Width; sX++){
-            for(byte sY = 0; sY < Height; sY++){
+        // die Reihenfolge der beiden for-Schleifen darf sich nicht ändern
+        // da die Firmware genau diese Reihenfolge der Stepper erwartet
+        for (byte sX = 0; sX < Width; sX++) {
+            for (byte sY = 0; sY < Height; sY++) {
                 steppers[sY * Width + sX] = new Stepper(this, sX, sY);
             }
         }
@@ -201,35 +203,41 @@ public class Cluster {
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    protected boolean SendMovementDataInternal(boolean guaranteed){
-        if(!dataChanged)
+    protected boolean SendMovementDataInternal(boolean guaranteed) {
+        if (!dataChanged)
             return false;
 
         Stepper[] changedSteppers =
                 Arrays.asList(steppers).stream().
                         filter(Stepper::hasDataChanged).toArray(Stepper[]::new);
 
-        if(changedSteppers.length == 0)
+        if (changedSteppers.length == 0)
             return false;
 
-        if(changedSteppers.length == 1){
+        if (changedSteppers.length == 1) {
             Stepper stepper = changedSteppers[0];
             return SendPacket(new MoveStepper(stepper.getX(), stepper.getY(), stepper.getHeight(), stepper.getWaitTime()), guaranteed);
         }
 
         boolean allSteppersSameValues = StepperUtil.AllSteppersSameValues(steppers);
 
-        if(allSteppersSameValues)
+        if (allSteppersSameValues)
             return SendPacket(new MoveAllSteppers(steppers[0].getHeight(), steppers[0].getWaitTime()), guaranteed);
 
-        boolean allChangedSameValues = StepperUtil.AllSteppersSameValues(changedSteppers);
+        // TODO detect rectangles
 
-        if(allChangedSameValues){
-            //TODO detect rectangles
-            return SendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
-        }else{
-            return SendPacket(new MoveStepperArray(changedSteppers), guaranteed);
+        // wenn die Anzahl der Stepper zu groß ist, dann
+        // ist es uneffizent die Position für jeden Stepper mitzuschicken
+        if (changedSteppers.length < 8) {
+            boolean allChangedSameValues = StepperUtil.AllSteppersSameValues(changedSteppers);
+
+            if (allChangedSameValues)
+                return SendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
+            else
+                return SendPacket(new MoveStepperArray(changedSteppers), guaranteed);
         }
+
+        return SendPacket(new MoveAllSteppersArray(changedSteppers), guaranteed);
     }
 
     /**
