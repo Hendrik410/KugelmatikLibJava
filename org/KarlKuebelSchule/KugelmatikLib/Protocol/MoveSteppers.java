@@ -8,7 +8,7 @@ import java.security.InvalidParameterException;
 
 /**
  * Created by Hendrik on 31.08.2015.
- * Befehl um mehrere Kugeln auf eine Höhe zu bringen
+ * Befehl um mehrere Kugeln auf eine Hoehe zu bringen
  */
 public class MoveSteppers extends Packet {
 
@@ -45,7 +45,7 @@ public class MoveSteppers extends Packet {
 
     @Override
     public int getDataSize() {
-        return 3 + items.length;
+        return 4 + items.length;
     }
 
     @Override
