@@ -12,10 +12,10 @@ import java.nio.ByteBuffer;
 public class MoveStepper extends Packet {
 
     private byte x, y;
-    private int height;
+    private short height;
     private byte waitTime;
 
-    public MoveStepper(byte x, byte y, int height, byte waitTime){
+    public MoveStepper(byte x, byte y, short height, byte waitTime){
         if(x >= Cluster.Width)
             throw new IllegalArgumentException("x is out of range");
         if(y >= Cluster.Height)
@@ -42,7 +42,7 @@ public class MoveStepper extends Packet {
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
         buffer.put((byte)((x << 4) | y));
-        buffer.putChar((char)height);
+        buffer.putShort(height);
         buffer.put(waitTime);
     }
 }

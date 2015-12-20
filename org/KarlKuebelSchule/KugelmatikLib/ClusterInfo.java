@@ -4,55 +4,64 @@ import com.sun.istack.internal.NotNull;
 
 /**
  * Created by Hendrik on 31.08.2015.
- * Enhält alle Informationen über das Cluster
+ * Enhï¿½lt alle Informationen ï¿½ber das Cluster
  */
 public class ClusterInfo {
     private byte buildVersion;
-    private boolean runningBusyCommand;
-    private int delayTime;
+    private BusyCommand currentBusyCommand;
     private int highestRevision;
     private ClusterConfig config;
+    private ErrorCode lastErrorCode;
+    private int freeRam;
 
-    public ClusterInfo(byte buildVersion, boolean runningBusyCommand, int delayTime, int highestRevision, @NotNull ClusterConfig config){
+    public ClusterInfo(byte buildVersion, BusyCommand currentBusyCommand, int highestRevision, @NotNull ClusterConfig config, ErrorCode lastErrorCode, int freeFram){
         this.buildVersion = buildVersion;
-        this.runningBusyCommand = runningBusyCommand;
-        this.delayTime = delayTime;
+        this.currentBusyCommand = currentBusyCommand;
         this.highestRevision = highestRevision;
         this.config = config;
+        this.lastErrorCode = lastErrorCode;
+        this.freeRam = freeFram;
     }
 
     /**
-     * Gibt zurück ob das Cluster einen Busy-Befehl ausführt
-     */
-    public boolean isRunningBusyCommand() {
-        return runningBusyCommand;
-    }
-
-    /**
-     * Gibt die BuildVersion der Firmware zurück
+     * Gibt die BuildVersion der Firmware zurï¿½ck
      */
     public byte getBuildVersion() {
         return buildVersion;
     }
 
     /**
-     * Gibt die Konfiguration des Clusters zurück
+     * Gibt das BusyCommand zurueck, welcher am Cluster ausgefuehrt wird
+     */
+    public BusyCommand getCurrentBusyCommand() {
+        return currentBusyCommand;
+    }
+
+    /**
+     * Gibt die hï¿½chste empfangene Revision des Clusters zurï¿½ck
+     */
+    public int getHighestRevision() {
+        return highestRevision;
+    }
+
+    /**
+     * Gibt die Konfiguration des Clusters zurï¿½ck
      */
     public ClusterConfig getConfig() {
         return config;
     }
 
     /**
-     * Gibt die DelayTime des Clusters zurück
+     * Gibt den ErrorCode zurueck, welcher am Cluster zuletzt aufgetreten ist
      */
-    public int getDelayTime() {
-        return delayTime;
+    public ErrorCode getLastErrorCode() {
+        return lastErrorCode;
     }
 
     /**
-     * Gibt die höchste empfangene Revision des Clusters zurück
+     * Gibt einen Wert in Bytes zurÃ¼ck, welcher den freien Arbeitsspeicher auf dem Cluster angibt
      */
-    public int getHighestRevision() {
-        return highestRevision;
+    public int getFreeRam() {
+        return freeRam;
     }
 }

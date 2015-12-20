@@ -34,7 +34,7 @@ public class Cluster {
     private Stepper[] steppers;
 
     private int currentRevision = 0;
-    private long lastPingTime = System.currentTimeMillis();
+    private long lastSuccessfulPingTime = -1;
     private int ping = -1;
     private boolean dataChanged;
 
@@ -48,10 +48,10 @@ public class Cluster {
      * @param x Die x-Koordinate der Position des Clusters in der Kugelmatik
      * @param y Die y-Koordinate der Position der Clusters in der Kugelmatik
      */
-    public Cluster(@NotNull Kugelmatik kugelmatik, @NotNull InetAddress address, int x, int y){
-        if(x < 0)
+    public Cluster(@NotNull Kugelmatik kugelmatik, InetAddress address, int x, int y) {
+        if (x < 0)
             throw new IllegalArgumentException("The argument 'x' is out of range.");
-        if(y < 0)
+        if (y < 0)
             throw new IllegalArgumentException("The argument 'y' is out of range.");
 
 
@@ -63,30 +63,41 @@ public class Cluster {
         this.y = y;
 
         steppers = new Stepper[Width * Height];
-        for(byte sX = 0; sX < Width; sX++){
-            for(byte sY = 0; sY < Height; sY++){
+
+        // die Reihenfolge der beiden for-Schleifen darf sich nicht ändern
+        // da die Firmware genau diese Reihenfolge der Stepper erwartet
+        for (byte sX = 0; sX < Width; sX++) {
+            for (byte sY = 0; sY < Height; sY++) {
                 steppers[sY * Width + sX] = new Stepper(this, sX, sY);
             }
         }
 
-        try {
-            socket = new DatagramSocket();
-            socket.connect(address, Config.ProtocolPort);
-            incomeListener = new DatagramIncomeListener(this, socket, "listen" + x + y);
-            incomeListener.Listen();
-        } catch (IOException e) {
-            Kugelmatik.Log().Err(e);
-            System.exit(-1);
-        }
+        if (address != null) {
+            try {
+                socket = new DatagramSocket();
+                socket.connect(address, Config.ProtocolPort);
+                incomeListener = new DatagramIncomeListener(this, socket, "listen" + x + "_" + y);
+                incomeListener.Listen();
+            } catch (IOException e) {
+                Kugelmatik.Log().Err(String.format("Error while creating socket for cluster [x: %d y: %d] with ip %s", x, y, address.getHostAddress()));
+                Kugelmatik.Log().Err(e);
+            }
 
+            SendPing();
+        }
+    }
+
+    /**
+     * Wird aufgerufen, wenn eine Verbindung hergestellt wurde.
+     */
+    private void onConnected() {
         ResetRevision();
-        SendPing();
         SendGetData();
         SendGetClusterConfig();
     }
 
     /**
-     * Wird aufgerufen wenn bei einem der Schtittmotoren eine Höhenänderung auftritt
+     * Wird aufgerufen, wenn bei einem der Schrittmotoren eine Höhenänderung auftritt
      */
     public void ChildHasChanged(){
         dataChanged = true;
@@ -133,11 +144,16 @@ public class Cluster {
      * @return Gibt zurück ob ein Packet gesendet wurde
      */
     protected boolean SendPacketInternal(@NotNull Packet packet, boolean guaranteed, int revision){
+        // bei keiner Verbindung Paket ignorieren
+        if (socket == null)
+            return false;
 
-        if(ping < 0){
-            if(Config.IgnoreGuaranteedWhenOffline)
+        if (ping < 0) {
+            if (Config.IgnoreGuaranteedWhenOffline)
                 guaranteed = false;
-            if(Config.IgnorePacketWhenOffline)
+
+            // Ping erlauben, sonst kann die Software nicht feststellen ob das Cluster verfügbar ist
+            if (!packet.getType().equals(PacketType.Ping) && Config.IgnorePacketWhenOffline)
                 return false;
         }
 
@@ -201,35 +217,41 @@ public class Cluster {
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    protected boolean SendMovementDataInternal(boolean guaranteed){
-        if(!dataChanged)
+    protected boolean SendMovementDataInternal(boolean guaranteed) {
+        if (!dataChanged)
             return false;
 
         Stepper[] changedSteppers =
                 Arrays.asList(steppers).stream().
                         filter(Stepper::hasDataChanged).toArray(Stepper[]::new);
 
-        if(changedSteppers.length == 0)
+        if (changedSteppers.length == 0)
             return false;
 
-        if(changedSteppers.length == 1){
+        if (changedSteppers.length == 1) {
             Stepper stepper = changedSteppers[0];
             return SendPacket(new MoveStepper(stepper.getX(), stepper.getY(), stepper.getHeight(), stepper.getWaitTime()), guaranteed);
         }
 
         boolean allSteppersSameValues = StepperUtil.AllSteppersSameValues(steppers);
 
-        if(allSteppersSameValues)
+        if (allSteppersSameValues)
             return SendPacket(new MoveAllSteppers(steppers[0].getHeight(), steppers[0].getWaitTime()), guaranteed);
 
-        boolean allChangedSameValues = StepperUtil.AllSteppersSameValues(changedSteppers);
+        // TODO detect rectangles
 
-        if(allChangedSameValues){
-            //TODO detect rectangles
-            return SendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
-        }else{
-            return SendPacket(new MoveStepperArray(changedSteppers), guaranteed);
+        // wenn die Anzahl der Stepper zu groß ist, dann
+        // ist es uneffizent die Position für jeden Stepper mitzuschicken
+        if (changedSteppers.length < 8) {
+            boolean allChangedSameValues = StepperUtil.AllSteppersSameValues(changedSteppers);
+
+            if (allChangedSameValues)
+                return SendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
+            else
+                return SendPacket(new MoveSteppersArray(changedSteppers), guaranteed);
         }
+
+        return SendPacket(new MoveAllSteppersArray(changedSteppers), guaranteed);
     }
 
     /**
@@ -258,7 +280,7 @@ public class Cluster {
      * Sendet ein Ping-Packet an das Cluster. Die Rundlaufzeit kann mit getPing() abgerufen werden.
      */
     public void SendPing(){
-        if(System.currentTimeMillis() - lastPingTime > 5000)
+        if (lastSuccessfulPingTime < 0 || System.currentTimeMillis() - lastSuccessfulPingTime > 5000)
             setPing(-1);
 
         SendPacket(new Ping(System.currentTimeMillis()));
@@ -330,13 +352,13 @@ public class Cluster {
      * Wird vom DatagramIncomeListener aufgerufen wenn ein neues Packet angekommen ist
      * @param packet Das angekommene Packet das verarbeitet werden soll
      */
-    public void OnReceive(DatagramPacket packet){
-        if(packet.getLength() == 0)
+    public void OnReceive(DatagramPacket packet) {
+        if (packet.getLength() == 0)
             return;
 
         byte[] data = packet.getData();
 
-        if(data.length < Packet.HeadSize || data[0] != 'K' || data[1] != 'K' || data[2] != 'S')
+        if (data.length < Packet.HeadSize || data[0] != 'K' || data[1] != 'K' || data[2] != 'S')
             return;
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(data));
@@ -346,14 +368,20 @@ public class Cluster {
             PacketType type = PacketType.values()[input.read() - 1];
             int revision = BinaryHelper.FlipByteOrder(input.readInt());
             String verbose = "Got packet | Length: " + data.length + " | Revision: " + revision + " | ";
-            switch(type) {
+            switch (type) {
                 case Ping:
                     verbose += "Ping";
-                    if(data.length - Packet.HeadSize == Long.SIZE / Byte.SIZE) {
-                        long sendTime = input.readLong();
-                        setPing((int)(System.currentTimeMillis() - sendTime));
-                        Acknowledge(revision);
-                    }
+                    if (data.length - Packet.HeadSize != Long.BYTES)
+                        break;
+
+                    if (getPing() < 0)
+                        onConnected();
+
+                    lastSuccessfulPingTime = System.currentTimeMillis();
+
+                    long sendTime = input.readLong();
+                    setPing((int) (System.currentTimeMillis() - sendTime));
+                    Acknowledge(revision);
                     break;
                 case Ack:
                     verbose += "Ack";
@@ -361,39 +389,46 @@ public class Cluster {
                     break;
                 case Info:
                     verbose += "Config";
-                    byte buildVersion = (byte)input.read();
+                    byte buildVersion = input.readByte();
 
-                    boolean isRunningBusyCommand = false;
-                    if(buildVersion >= 8) {
-                        isRunningBusyCommand = input.read() > 0;
-                    }
+                    BusyCommand currentBusyCommand = BusyCommand.None;
+                    if (buildVersion >= 11)
+                        currentBusyCommand = BusyCommand.values()[input.readByte()];
+                    else if (buildVersion >= 8)
+                        currentBusyCommand = input.read() > 0 ? BusyCommand.Unkown : BusyCommand.None;
 
                     int highestRevision = 0;
-                    if(buildVersion >= 9) {
+                    if (buildVersion >= 9)
                         highestRevision = BinaryHelper.FlipByteOrder(input.readInt());
-                    }
 
-                    byte stepMode = (byte)input.read();
+                    byte stepMode = (byte) input.read();
 
                     int delayTime = BinaryHelper.FlipByteOrder(input.readInt());
 
                     boolean useBreak = false;
-                    if(buildVersion >= 6) {
+                    if (buildVersion >= 6)
                         useBreak = input.read() > 0;
-                    }
 
-                    clusterInfo = new ClusterInfo(buildVersion, isRunningBusyCommand, delayTime, highestRevision, new ClusterConfig(StepMode.values()[stepMode - 1], delayTime, useBreak));
+                    ErrorCode lastErrorCode = ErrorCode.None;
+                    if (buildVersion >= 12)
+                        lastErrorCode = ErrorCode.values()[input.readByte()];
+
+                    int freeRam = -1;
+                    if (buildVersion >= 14)
+                        freeRam = input.readInt();
+
+                    clusterInfo = new ClusterInfo(buildVersion, currentBusyCommand, highestRevision, new ClusterConfig(StepMode.values()[stepMode - 1], delayTime, useBreak), lastErrorCode, freeRam);
                     Acknowledge(revision);
                     break;
                 case GetData:
                     verbose += "StepperData";
-                    for(byte x = 0; x < Width; x++) // for-Schleife muss mit Firmware übereinstimmen
-                        for(byte y = 0; y < Height; y++) {
+                    for (byte x = 0; x < Width; x++) // for-Schleife muss mit Firmware übereinstimmen
+                        for (byte y = 0; y < Height; y++) {
                             Stepper stepper = getStepperByPosition(x, y);
 
 
                             short height = BinaryHelper.FlipByteOrder(input.readShort());
-                            if(height > Config.MaxHeight)
+                            if (height > Config.MaxHeight)
                                 continue; // Höhe ignorieren
 
                             byte waitTime = input.readByte();
@@ -406,7 +441,7 @@ public class Cluster {
             }
             Kugelmatik.Log().Verbose(getID() + ": " + verbose);
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             Kugelmatik.Log().Err(e);
         }
     }
@@ -428,11 +463,11 @@ public class Cluster {
      * Setzt den Ping-Wert und ruft bei �nderungen das entsprechende Event auf.
      * @param ping Der neue Ping-Wert
      */
-    private void setPing(int ping){
-        if(this.ping != ping){
-            lastPingTime = System.currentTimeMillis();
+    private void setPing(int ping) {
+        if (this.ping != ping) {
             this.ping = ping;
-            if(pingChangedEventHandler != null)
+
+            if (pingChangedEventHandler != null)
                 pingChangedEventHandler.OnPingChanged(this);
         }
     }
