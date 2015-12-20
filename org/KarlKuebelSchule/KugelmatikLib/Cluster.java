@@ -63,7 +63,7 @@ public class Cluster {
         this.y = y;
 
         steppers = new Stepper[Width * Height];
-        
+
         // die Reihenfolge der beiden for-Schleifen darf sich nicht ändern
         // da die Firmware genau diese Reihenfolge der Stepper erwartet
         for (byte sX = 0; sX < Width; sX++) {
@@ -144,10 +144,12 @@ public class Cluster {
         if (socket == null)
             return false;
 
-        if(ping < 0){
-            if(Config.IgnoreGuaranteedWhenOffline)
+        if (ping < 0) {
+            if (Config.IgnoreGuaranteedWhenOffline)
                 guaranteed = false;
-            if(Config.IgnorePacketWhenOffline)
+
+            // Ping erlauben, sonst kann die Software nicht feststellen ob das Cluster verfügbar ist
+            if (!packet.getType().equals(PacketType.Ping) && Config.IgnorePacketWhenOffline)
                 return false;
         }
 
