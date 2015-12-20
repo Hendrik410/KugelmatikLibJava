@@ -48,7 +48,7 @@ public class Cluster {
      * @param x Die x-Koordinate der Position des Clusters in der Kugelmatik
      * @param y Die y-Koordinate der Position der Clusters in der Kugelmatik
      */
-    public Cluster(@NotNull Kugelmatik kugelmatik, @NotNull InetAddress address, int x, int y) {
+    public Cluster(@NotNull Kugelmatik kugelmatik, InetAddress address, int x, int y) {
         if (x < 0)
             throw new IllegalArgumentException("The argument 'x' is out of range.");
         if (y < 0)
@@ -63,6 +63,7 @@ public class Cluster {
         this.y = y;
 
         steppers = new Stepper[Width * Height];
+        
         // die Reihenfolge der beiden for-Schleifen darf sich nicht ändern
         // da die Firmware genau diese Reihenfolge der Stepper erwartet
         for (byte sX = 0; sX < Width; sX++) {
@@ -71,20 +72,24 @@ public class Cluster {
             }
         }
 
-        try {
-            socket = new DatagramSocket();
-            socket.connect(address, Config.ProtocolPort);
-            incomeListener = new DatagramIncomeListener(this, socket, "listen" + x + y);
-            incomeListener.Listen();
-        } catch (IOException e) {
-            Kugelmatik.Log().Err(e);
-            System.exit(-1);
-        }
+        if (address != null) {
+            try {
+                socket = new DatagramSocket();
+                socket.connect(address, Config.ProtocolPort);
+                incomeListener = new DatagramIncomeListener(this, socket, "listen" + x + "_" + y);
+                incomeListener.Listen();
+            } catch (IOException e) {
+                Kugelmatik.Log().Err(String.format("Error while creating socket for cluster [x: %d y: %d] with ip %s", x, y, address.getHostAddress()));
+                Kugelmatik.Log().Err(e);
+            }
 
-        ResetRevision();
-        SendPing();
-        SendGetData();
-        SendGetClusterConfig();
+            if (socket != null) {
+                ResetRevision();
+                SendPing();
+                SendGetData();
+                SendGetClusterConfig();
+            }
+        }
     }
 
     /**
@@ -135,6 +140,9 @@ public class Cluster {
      * @return Gibt zurück ob ein Packet gesendet wurde
      */
     protected boolean SendPacketInternal(@NotNull Packet packet, boolean guaranteed, int revision){
+        // bei keiner Verbindung Paket ignorieren
+        if (socket == null)
+            return false;
 
         if(ping < 0){
             if(Config.IgnoreGuaranteedWhenOffline)
