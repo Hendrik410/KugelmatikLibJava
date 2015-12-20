@@ -34,7 +34,7 @@ public class Cluster {
     private Stepper[] steppers;
 
     private int currentRevision = 0;
-    private long lastPingTime = System.currentTimeMillis();
+    private long lastSuccessfulPingTime = -1;
     private int ping = -1;
     private boolean dataChanged;
 
@@ -83,17 +83,21 @@ public class Cluster {
                 Kugelmatik.Log().Err(e);
             }
 
-            if (socket != null) {
-                ResetRevision();
-                SendPing();
-                SendGetData();
-                SendGetClusterConfig();
-            }
+            SendPing();
         }
     }
 
     /**
-     * Wird aufgerufen wenn bei einem der Schtittmotoren eine Höhenänderung auftritt
+     * Wird aufgerufen, wenn eine Verbindung hergestellt wurde.
+     */
+    private void onConnected() {
+        ResetRevision();
+        SendGetData();
+        SendGetClusterConfig();
+    }
+
+    /**
+     * Wird aufgerufen, wenn bei einem der Schrittmotoren eine Höhenänderung auftritt
      */
     public void ChildHasChanged(){
         dataChanged = true;
@@ -276,7 +280,7 @@ public class Cluster {
      * Sendet ein Ping-Packet an das Cluster. Die Rundlaufzeit kann mit getPing() abgerufen werden.
      */
     public void SendPing(){
-        if(System.currentTimeMillis() - lastPingTime > 5000)
+        if (lastSuccessfulPingTime < 0 || System.currentTimeMillis() - lastSuccessfulPingTime > 5000)
             setPing(-1);
 
         SendPacket(new Ping(System.currentTimeMillis()));
@@ -367,11 +371,17 @@ public class Cluster {
             switch (type) {
                 case Ping:
                     verbose += "Ping";
-                    if (data.length - Packet.HeadSize == Long.SIZE / Byte.SIZE) {
-                        long sendTime = input.readLong();
-                        setPing((int) (System.currentTimeMillis() - sendTime));
-                        Acknowledge(revision);
-                    }
+                    if (data.length - Packet.HeadSize != Long.BYTES)
+                        break;
+
+                    if (getPing() < 0)
+                        onConnected();
+
+                    lastSuccessfulPingTime = System.currentTimeMillis();
+
+                    long sendTime = input.readLong();
+                    setPing((int) (System.currentTimeMillis() - sendTime));
+                    Acknowledge(revision);
                     break;
                 case Ack:
                     verbose += "Ack";
@@ -453,11 +463,11 @@ public class Cluster {
      * Setzt den Ping-Wert und ruft bei �nderungen das entsprechende Event auf.
      * @param ping Der neue Ping-Wert
      */
-    private void setPing(int ping){
-        if(this.ping != ping){
-            lastPingTime = System.currentTimeMillis();
+    private void setPing(int ping) {
+        if (this.ping != ping) {
             this.ping = ping;
-            if(pingChangedEventHandler != null)
+
+            if (pingChangedEventHandler != null)
                 pingChangedEventHandler.OnPingChanged(this);
         }
     }
