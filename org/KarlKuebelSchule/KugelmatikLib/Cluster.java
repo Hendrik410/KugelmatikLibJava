@@ -338,13 +338,13 @@ public class Cluster {
      * Wird vom DatagramIncomeListener aufgerufen wenn ein neues Packet angekommen ist
      * @param packet Das angekommene Packet das verarbeitet werden soll
      */
-    public void OnReceive(DatagramPacket packet){
-        if(packet.getLength() == 0)
+    public void OnReceive(DatagramPacket packet) {
+        if (packet.getLength() == 0)
             return;
 
         byte[] data = packet.getData();
 
-        if(data.length < Packet.HeadSize || data[0] != 'K' || data[1] != 'K' || data[2] != 'S')
+        if (data.length < Packet.HeadSize || data[0] != 'K' || data[1] != 'K' || data[2] != 'S')
             return;
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(data));
@@ -354,12 +354,12 @@ public class Cluster {
             PacketType type = PacketType.values()[input.read() - 1];
             int revision = BinaryHelper.FlipByteOrder(input.readInt());
             String verbose = "Got packet | Length: " + data.length + " | Revision: " + revision + " | ";
-            switch(type) {
+            switch (type) {
                 case Ping:
                     verbose += "Ping";
-                    if(data.length - Packet.HeadSize == Long.SIZE / Byte.SIZE) {
+                    if (data.length - Packet.HeadSize == Long.SIZE / Byte.SIZE) {
                         long sendTime = input.readLong();
-                        setPing((int)(System.currentTimeMillis() - sendTime));
+                        setPing((int) (System.currentTimeMillis() - sendTime));
                         Acknowledge(revision);
                     }
                     break;
@@ -369,39 +369,46 @@ public class Cluster {
                     break;
                 case Info:
                     verbose += "Config";
-                    byte buildVersion = (byte)input.read();
+                    byte buildVersion = input.readByte();
 
-                    boolean isRunningBusyCommand = false;
-                    if(buildVersion >= 8) {
-                        isRunningBusyCommand = input.read() > 0;
-                    }
+                    BusyCommand currentBusyCommand = BusyCommand.None;
+                    if (buildVersion >= 11)
+                        currentBusyCommand = BusyCommand.values()[input.readByte()];
+                    else if (buildVersion >= 8)
+                        currentBusyCommand = input.read() > 0 ? BusyCommand.Unkown : BusyCommand.None;
 
                     int highestRevision = 0;
-                    if(buildVersion >= 9) {
+                    if (buildVersion >= 9)
                         highestRevision = BinaryHelper.FlipByteOrder(input.readInt());
-                    }
 
-                    byte stepMode = (byte)input.read();
+                    byte stepMode = (byte) input.read();
 
                     int delayTime = BinaryHelper.FlipByteOrder(input.readInt());
 
                     boolean useBreak = false;
-                    if(buildVersion >= 6) {
+                    if (buildVersion >= 6)
                         useBreak = input.read() > 0;
-                    }
 
-                    clusterInfo = new ClusterInfo(buildVersion, isRunningBusyCommand, delayTime, highestRevision, new ClusterConfig(StepMode.values()[stepMode - 1], delayTime, useBreak));
+                    ErrorCode lastErrorCode = ErrorCode.None;
+                    if (buildVersion >= 12)
+                        lastErrorCode = ErrorCode.values()[input.readByte()];
+
+                    int freeRam = -1;
+                    if (buildVersion >= 14)
+                        freeRam = input.readInt();
+
+                    clusterInfo = new ClusterInfo(buildVersion, currentBusyCommand, highestRevision, new ClusterConfig(StepMode.values()[stepMode - 1], delayTime, useBreak), lastErrorCode, freeRam);
                     Acknowledge(revision);
                     break;
                 case GetData:
                     verbose += "StepperData";
-                    for(byte x = 0; x < Width; x++) // for-Schleife muss mit Firmware übereinstimmen
-                        for(byte y = 0; y < Height; y++) {
+                    for (byte x = 0; x < Width; x++) // for-Schleife muss mit Firmware übereinstimmen
+                        for (byte y = 0; y < Height; y++) {
                             Stepper stepper = getStepperByPosition(x, y);
 
 
                             short height = BinaryHelper.FlipByteOrder(input.readShort());
-                            if(height > Config.MaxHeight)
+                            if (height > Config.MaxHeight)
                                 continue; // Höhe ignorieren
 
                             byte waitTime = input.readByte();
@@ -414,7 +421,7 @@ public class Cluster {
             }
             Kugelmatik.Log().Verbose(getID() + ": " + verbose);
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             Kugelmatik.Log().Err(e);
         }
     }
