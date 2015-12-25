@@ -88,15 +88,26 @@ public class Kugelmatik {
     }
 
     /**
-     * Sendet alle Höhenänderungen and die Cluster
+     * Sendet alle Höhenänderungen an die Cluster
      *
      * @param guaranteed Gibt an, ob eine Bestätigung gesendet werden soll
      * @return Gibt true zurück, wenn ein Packet gesendet wurde
      */
     public boolean sendMovementData(boolean guaranteed) {
+        return sendMovementData(guaranteed, false);
+    }
+
+    /**
+     * Sendet alle Höhenänderungen an die Cluster
+     *
+     * @param guaranteed Gibt an, ob eine Bestätigung gesendet werden soll
+     * @param sendAllSteppers Gibt an, ob alle Stepper gesendet werden sollen, auch wenn die Daten sich nicht geändert haben.
+     * @return Gibt true zurück, wenn ein Packet gesendet wurde
+     */
+    public boolean sendMovementData(boolean guaranteed, boolean sendAllSteppers) {
         boolean anyPacketsSend = false;
         for (Cluster cluster : clusters)
-            anyPacketsSend |= cluster.sendMovementData(guaranteed);
+            anyPacketsSend |= cluster.sendMovementData(guaranteed, sendAllSteppers);
         return anyPacketsSend;
     }
 
