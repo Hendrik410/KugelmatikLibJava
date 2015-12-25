@@ -1,5 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
+import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.Cluster;
 
 import java.nio.ByteBuffer;
@@ -33,7 +34,7 @@ public class Fix extends Packet {
 
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
-        buffer.putInt(0xDCBA);
+        buffer.putInt(BinaryHelper.flipByteOrder(0xDCBA));
         buffer.put((byte) ((x << 4) | y));
     }
 }

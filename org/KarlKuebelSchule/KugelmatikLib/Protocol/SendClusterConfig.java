@@ -1,6 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
 import com.sun.istack.internal.NotNull;
+import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.ClusterConfig;
 
 import java.nio.ByteBuffer;
@@ -29,7 +30,7 @@ public class SendClusterConfig extends Packet {
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
         buffer.put(config.getStepMode().getByteValue());
-        buffer.putInt(config.getTickTime());
+        buffer.putInt(BinaryHelper.flipByteOrder(config.getTickTime()));
         buffer.put((byte)(config.getUseBreak() ? 1 : 0));
     }
 }

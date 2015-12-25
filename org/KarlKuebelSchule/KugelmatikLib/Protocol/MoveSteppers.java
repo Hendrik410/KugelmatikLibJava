@@ -1,5 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
+import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.Stepper;
 
@@ -62,7 +63,7 @@ public class MoveSteppers extends Packet {
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
         buffer.put((byte) items.length);
-        buffer.putShort(height);
+        buffer.putShort(BinaryHelper.flipByteOrder(height));
         buffer.put(waitTime);
         for (int i = 0; i < items.length; i++) {
             buffer.put((byte) ((items[i].getX() << 4) | items[i].getY()));

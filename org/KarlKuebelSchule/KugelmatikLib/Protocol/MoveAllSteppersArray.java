@@ -58,7 +58,7 @@ public class MoveAllSteppersArray extends Packet {
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
         for (int i = 0; i < heights.length; i++) {
-            buffer.putShort(heights[i]);
+            buffer.putShort(BinaryHelper.flipByteOrder(heights[i]));
             buffer.put(waitTimes[i]);
         }
     }

@@ -76,7 +76,7 @@ public class ChoreographyManager implements Runnable {
     private void setSteppers() {
         for (int x = 0; x < kugelmatik.getStepperWidth(); x++)
             for (int y = 0; y < kugelmatik.getStepperHeight(); y++)
-                kugelmatik.getStepperByPosition(x, y).moveTo(choreography.getHeight(x, y, 0, this));
+                kugelmatik.getStepperByPosition(x, y).set(choreography.getHeight(x, y, 0, this));
     }
 
     @Override

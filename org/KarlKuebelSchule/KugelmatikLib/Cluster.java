@@ -151,7 +151,7 @@ public class Cluster {
         if (socket == null)
             return false;
 
-        if (ping < 0) {
+        if (!isConnected()) {
             if (Config.IgnoreGuaranteedWhenOffline)
                 guaranteed = false;
 
@@ -187,12 +187,12 @@ public class Cluster {
      *
      * @param height Die Höhe zu der sich die Kugeln bewegen sollen
      */
-    public void moveAllSteppers(int height) {
+    public void setAllSteppers(int height) {
         if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
 
         for (Stepper stepper : steppers)
-            stepper.moveTo(height);
+            stepper.set(height);
     }
 
     /**
@@ -301,6 +301,10 @@ public class Cluster {
         sendPacket(new Ping(System.currentTimeMillis()));
     }
 
+    public boolean isConnected() {
+        return ping >= 0;
+    }
+
     /**
      * Sendet eine Stop-Befehl an das Cluster
      */
@@ -385,7 +389,7 @@ public class Cluster {
                     if (data.length - Packet.HeadSize != Long.BYTES)
                         break;
 
-                    if (getPing() < 0)
+                    if (!isConnected())
                         onConnected();
 
                     lastSuccessfulPingTime = System.currentTimeMillis();
@@ -424,7 +428,7 @@ public class Cluster {
 
                     int freeRam = -1;
                     if (buildVersion >= 14)
-                        freeRam = input.readInt();
+                        freeRam = BinaryHelper.flipByteOrder(input.readInt());
 
                     clusterInfo = new ClusterInfo(buildVersion, currentBusyCommand, highestRevision, new ClusterConfig(StepMode.values()[stepMode - 1], delayTime, useBreak), lastErrorCode, freeRam);
                     break;

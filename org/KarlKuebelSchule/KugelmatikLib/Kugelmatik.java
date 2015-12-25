@@ -72,10 +72,14 @@ public class Kugelmatik {
      *
      * @param height Die Höhe auf die alle Stepper gesetzt werden sollen
      */
-    public void moveAllSteppers(int height) {
-        getLog().verbose("moveAllSteppers(height = " + height + ")");
+    public void setAllSteppers(int height) {
+        setAllSteppers(height, Config.DefaultWaitTime);
+    }
+
+    public void setAllSteppers(int height, byte waitTime) {
+        getLog().verbose("moveAllSteppers(height = %d, waitTime = %d)", height, waitTime);
         for (Cluster cluster : clusters)
-            cluster.moveAllSteppers(height);
+            cluster.setAllSteppers(height);
     }
 
     /**
@@ -156,12 +160,12 @@ public class Kugelmatik {
         return getClusterByPosition(cx, cy).getStepperByPosition(sx, sy);
     }
 
-    public void moveStepper(int x, int y, int height) {
-        getStepperByPosition(x, y).moveTo(height);
+    public void setStepper(int x, int y, int height) {
+        getStepperByPosition(x, y).set(height);
     }
 
-    public void moveStepper(int x, int y, int height, byte waitTime) {
-        getStepperByPosition(x, y).moveTo(height, waitTime);
+    public void setStepper(int x, int y, int height, byte waitTime) {
+        getStepperByPosition(x, y).set(height, waitTime);
     }
     /**
      * Gibt die Breite der Kugelmatik in Steppern zurück

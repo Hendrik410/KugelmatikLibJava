@@ -48,8 +48,8 @@ public class Stepper {
      *
      * @param height Die Höhe der Kugel
      */
-    public synchronized void moveTo(int height) {
-        moveTo(height, Config.DefaultWaitTime);
+    public synchronized void set(int height) {
+        set(height, Config.DefaultWaitTime);
     }
 
     /**
@@ -58,7 +58,7 @@ public class Stepper {
      * @param height   Die Höhe der Kugel
      * @param waitTime Die Zeit die gewartet werden soll
      */
-    public synchronized void moveTo(int height, byte waitTime) {
+    public synchronized void set(int height, byte waitTime) {
         if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
         if (waitTime < 0)
