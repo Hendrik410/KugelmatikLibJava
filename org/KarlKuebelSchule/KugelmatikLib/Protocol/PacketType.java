@@ -1,7 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Eine Enumeration aller M�glichen Pakettypen
  */
 public enum PacketType {

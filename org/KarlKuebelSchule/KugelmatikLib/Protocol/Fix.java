@@ -6,7 +6,6 @@ import org.KarlKuebelSchule.KugelmatikLib.Cluster;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Der Befehl zum vollständigen Herrunterfahren einer Kugel, dabei wird die maximale Höhe ignoriert.
  */
 public class Fix extends Packet {

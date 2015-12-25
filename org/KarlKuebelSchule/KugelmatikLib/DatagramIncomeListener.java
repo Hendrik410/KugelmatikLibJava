@@ -6,7 +6,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Der Thread wartet auf ein ankommendes Packet an dem DatagramSocket
  */
 public class DatagramIncomeListener implements Runnable {

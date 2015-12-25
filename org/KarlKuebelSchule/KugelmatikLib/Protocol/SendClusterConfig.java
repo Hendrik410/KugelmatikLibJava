@@ -7,7 +7,6 @@ import org.KarlKuebelSchule.KugelmatikLib.ClusterConfig;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Befehl um die Konfiguration an ein Cluster zu senden
  */
 public class SendClusterConfig extends Packet {

@@ -5,7 +5,6 @@ import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.IChoreography;
 
 /**
- * Created by Hendrik on 03.09.2015.
  * Stellt eine sich bewegende Sinuswelle da
  */
 public class SineWave implements IChoreography {

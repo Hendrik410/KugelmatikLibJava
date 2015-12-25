@@ -1,7 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Stellt den Schrittmodus eines Clusters da
  */
 public enum StepMode {

@@ -3,7 +3,6 @@ package org.KarlKuebelSchule.KugelmatikLib;
 import java.net.InetAddress;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Der StaticAddressProvider gibt für jede Position doe selbe Ardesse zurück
  */
 public class StaticAddressProvider implements IAddressProvider {

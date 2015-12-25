@@ -6,7 +6,6 @@ import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Eine abstrakte Klasse für Packete die an die Kugelmatik übermittelt werden
  */
 public abstract class Packet {

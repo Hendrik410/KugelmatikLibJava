@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Befehl zum Bewegen mehrerer Kugeln in jeweils eigene H�hen mit eigener waitTime
  */
 public class MoveSteppersArray extends Packet {

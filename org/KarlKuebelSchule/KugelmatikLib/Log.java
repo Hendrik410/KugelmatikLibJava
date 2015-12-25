@@ -8,8 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by Hendrik on 03.09.2015.
- * Ermöglicht das Erstellen von Logs
+ * ErmÃ¶glicht das Erstellen von Logs
  */
 public class Log {
     private static final DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -20,7 +19,7 @@ public class Log {
     /**
      * Erstellt eine Log-Instanz mit Standard Stream (System.out).
      *
-     * @param logLevel Gibt den mindest LogLevel an, ab dem Log-Einträge angezeigt werden sollen.
+     * @param logLevel Gibt den mindest LogLevel an, ab dem Log-EintrÃ¤ge angezeigt werden sollen.
      */
     public Log(LogLevel logLevel) {
         this(System.out, logLevel);
@@ -29,8 +28,8 @@ public class Log {
     /**
      * Erstellt eine Log-Instanz mit einem anderen Out PrintStream.
      *
-     * @param out      Gibt den PrintStream an, über dem Log-Einträge geschrieben werden sollen.
-     * @param logLevel Gibt den mindest LogLevel an, ab dem Log-Einträge angezeigt werden sollen.
+     * @param out      Gibt den PrintStream an, Ã¼ber dem Log-EintrÃ¤ge geschrieben werden sollen.
+     * @param logLevel Gibt den mindest LogLevel an, ab dem Log-EintrÃ¤ge angezeigt werden sollen.
      */
     public Log(@NotNull PrintStream out, LogLevel logLevel) {
         this(out, null, logLevel);
@@ -39,9 +38,9 @@ public class Log {
     /**
      * Erstellt eine Log-Instanz mit einem anderen Out und Err PrintStream.
      *
-     * @param out      Gibt den PrintStream an, über dem Log-Einträge geschrieben werden sollen.
-     * @param err      Gibt den PrintStream an, über dem Fehler Log-Einträge geschrieben werden sollen.
-     * @param logLevel Gibt den mindest LogLevel an, ab dem Log-Einträge angezeigt werden sollen.
+     * @param out      Gibt den PrintStream an, Ã¼ber dem Log-EintrÃ¤ge geschrieben werden sollen.
+     * @param err      Gibt den PrintStream an, Ã¼ber dem Fehler Log-EintrÃ¤ge geschrieben werden sollen.
+     * @param logLevel Gibt den mindest LogLevel an, ab dem Log-EintrÃ¤ge angezeigt werden sollen.
      */
     public Log(@NotNull PrintStream out, PrintStream err, LogLevel logLevel) {
         this.out = out;

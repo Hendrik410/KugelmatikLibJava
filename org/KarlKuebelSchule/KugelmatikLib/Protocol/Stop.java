@@ -3,7 +3,6 @@ package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Befehl um den aktuellen Busy-Befehl des Clusters zu stoppen oder, wenn kein Busy-Befehl läuft, die Bewegung der Kugeln zu stoppen.
  */
 public class Stop extends Packet {

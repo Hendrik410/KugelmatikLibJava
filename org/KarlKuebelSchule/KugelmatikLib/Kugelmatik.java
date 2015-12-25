@@ -5,7 +5,6 @@ import com.sun.istack.internal.NotNull;
 import java.net.SocketException;
 
 /**
- * Created by Hendrik on 29.08.2015.
  * Repräsentiert eine Kugelmatik
  */
 public class Kugelmatik {

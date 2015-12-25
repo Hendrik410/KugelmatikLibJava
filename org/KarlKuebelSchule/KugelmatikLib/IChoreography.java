@@ -1,8 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by Hendrik on 03.09.2015.
- * Interface f�r eine Choreograpy
+ * Interface für eine Choreograpy
  */
 public interface IChoreography {
     /**

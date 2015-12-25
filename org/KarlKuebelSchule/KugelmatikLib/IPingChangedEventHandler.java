@@ -1,7 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Das Interface für das PingChangedEvent
  */
 public interface IPingChangedEventHandler {

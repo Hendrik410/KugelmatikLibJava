@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Hendrik on 29.08.2015.
  * Repräsentiert ein Cluster der Kugelmatik
  */
 public class Cluster {

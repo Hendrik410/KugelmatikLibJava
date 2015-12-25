@@ -2,8 +2,7 @@ package org.KarlKuebelSchule.KugelmatikLib;
 
 
 /**
- * Created by Hendrik on 31.08.2015.
- * Eine Hilfsklasse für Binäroperationen
+ * Eine Hilfsklasse fÃ¼r BinÃ¤roperationen
  */
 public class BinaryHelper {
 

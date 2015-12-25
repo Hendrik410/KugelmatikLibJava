@@ -5,7 +5,6 @@ import com.sun.istack.internal.NotNull;
 import java.security.InvalidParameterException;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Stellt die Konfiguration eines Clusters da
  */
 public class ClusterConfig {

@@ -1,7 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by henrik.kunzelmann on 25.12.2015.
+ * Gibt das LogLevel für Log-Einträge an.
  */
 public enum LogLevel{
     Verbose,

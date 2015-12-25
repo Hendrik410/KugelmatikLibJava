@@ -7,7 +7,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by Hendrik on 01.09.2015.
  * Hilfsklasse um Aufgaben wie Ping regelmäßig aufzurufen
  */
 public class KugelmatikScheduler {

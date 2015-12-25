@@ -3,7 +3,6 @@ package org.KarlKuebelSchule.KugelmatikLib;
 import java.util.Arrays;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Eine Hilfsklasse für Schrittmotoren
  */
 public class StepperUtil {

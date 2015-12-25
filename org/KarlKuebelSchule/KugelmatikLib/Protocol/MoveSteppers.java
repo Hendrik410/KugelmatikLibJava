@@ -7,7 +7,6 @@ import org.KarlKuebelSchule.KugelmatikLib.Stepper;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Befehl um mehrere Kugeln auf eine Hoehe zu bringen
  */
 public class MoveSteppers extends Packet {

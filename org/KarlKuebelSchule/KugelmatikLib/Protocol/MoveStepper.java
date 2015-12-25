@@ -7,7 +7,6 @@ import org.KarlKuebelSchule.KugelmatikLib.Config;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Befehl zum Bewegen einer einzelnen Steppers auf einem Cluster.
  */
 public class MoveStepper extends Packet {

@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * Created by Hendrik on 29.08.2015.
  * Der StandardAddressProvider gibt die Adresse eines Clusters anhand seiner Position zurück
  */
 public class StandardAddressProvider implements IAddressProvider {

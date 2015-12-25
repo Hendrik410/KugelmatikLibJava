@@ -1,7 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by henrik.kunzelmann on 20.12.2015.
+ * Gibt alle Befehle an bei dennen das Cluster in einem blockierenden (Busy) Zustand ist.
  */
 public enum BusyCommand {
     None((byte)0),

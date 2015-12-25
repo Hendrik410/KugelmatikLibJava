@@ -4,7 +4,6 @@ import com.sun.istack.internal.NotNull;
 import com.sun.xml.internal.ws.handler.HandlerException;
 
 /**
- * Created by Hendrik on 29.08.2015.
  * Repräsentiert einen Schrittmotor eines Clusters
  */
 public class Stepper {

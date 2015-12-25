@@ -5,7 +5,6 @@ import com.sun.istack.internal.NotNull;
 import java.security.InvalidParameterException;
 
 /**
- * Created by Hendrik on 03.09.2015.
  * Der ChoreographyManager berechnet die Bewegungen für eine Chereographie und sendet die Daten an die Kugelmatik.
  */
 public class ChoreographyManager implements Runnable {

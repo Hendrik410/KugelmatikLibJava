@@ -3,7 +3,6 @@ package org.KarlKuebelSchule.KugelmatikLib;
 import com.sun.istack.internal.NotNull;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Enhält alle Informationen über das Cluster
  */
 public class ClusterInfo {

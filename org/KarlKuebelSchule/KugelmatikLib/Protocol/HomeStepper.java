@@ -6,7 +6,6 @@ import org.KarlKuebelSchule.KugelmatikLib.Cluster;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 30.08.2015.
  * Der Home Befehl f�r einen Stepper
  */
 public class HomeStepper extends Packet {
