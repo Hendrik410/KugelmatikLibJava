@@ -160,14 +160,15 @@ public class Cluster {
                 return false;
         }
 
-
-        if (packet.getType().doesClusterAnswer())
-            guaranteed = false;
-
         if (guaranteed) {
             packetsToAcknowledge.put(currentRevision, packet);
             packetsSentTimes.put(currentRevision, System.currentTimeMillis());
         }
+
+        // wenn Cluster antwortet, dann muss nicht der Flag zum Senden von einem Ack-Paket gesetzt werden, da
+        // schon die Antwort vom Cluster als Ack-Paket dient
+        if (packet.getType().doesClusterAnswer())
+            guaranteed = false;
 
         DatagramPacket datagramPacket = packet.getPacket(guaranteed, currentRevision);
         try {
