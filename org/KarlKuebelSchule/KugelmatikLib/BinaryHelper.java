@@ -1,8 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by Hendrik on 31.08.2015.
  * Eine Hilfsklasse für Binäroperationen

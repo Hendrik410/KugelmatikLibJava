@@ -2,11 +2,9 @@ package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
 import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.Cluster;
-import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.Stepper;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
 
 /**
  * Created by Henrik Kunzelmann on 20.12.2015.

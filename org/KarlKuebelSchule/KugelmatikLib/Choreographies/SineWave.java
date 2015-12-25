@@ -4,8 +4,6 @@ import org.KarlKuebelSchule.KugelmatikLib.ChoreographyManager;
 import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.IChoreography;
 
-import java.security.InvalidParameterException;
-
 /**
  * Created by Hendrik on 03.09.2015.
  * Stellt eine sich bewegende Sinuswelle da

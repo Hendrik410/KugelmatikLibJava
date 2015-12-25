@@ -4,7 +4,6 @@ import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.Config;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
 
 /**
  * Created by Hendrik on 30.08.2015.

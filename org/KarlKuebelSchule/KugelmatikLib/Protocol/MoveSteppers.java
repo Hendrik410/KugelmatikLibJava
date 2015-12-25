@@ -5,7 +5,6 @@ import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.Stepper;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
 
 /**
  * Created by Hendrik on 31.08.2015.

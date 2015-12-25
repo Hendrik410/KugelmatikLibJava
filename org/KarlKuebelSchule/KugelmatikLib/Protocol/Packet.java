@@ -4,7 +4,6 @@ import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 /**
  * Created by Hendrik on 30.08.2015.
