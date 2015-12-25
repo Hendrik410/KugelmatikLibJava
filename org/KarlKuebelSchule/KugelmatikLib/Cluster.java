@@ -198,13 +198,17 @@ public class Cluster {
        return SendMovementData(false);
     }
 
+    public boolean SendMovementData(boolean guaranteed){
+        return SendMovementData(guaranteed, false);
+    }
+
     /**
      * Sendet die Höhenänderungen an das Cluster
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    public boolean SendMovementData(boolean guaranteed){
-        boolean sentSomething = SendMovementDataInternal(guaranteed);
+    public boolean SendMovementData(boolean guaranteed, boolean sendAllSteppers){
+        boolean sentSomething = SendMovementDataInternal(guaranteed, sendAllSteppers);
         if(sentSomething){
             for(Stepper stepper : steppers)
                 stepper.Updated();
@@ -217,13 +221,16 @@ public class Cluster {
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    protected boolean SendMovementDataInternal(boolean guaranteed) {
+    protected boolean SendMovementDataInternal(boolean guaranteed, boolean sendAllSteppers) {
         if (!dataChanged)
             return false;
 
-        Stepper[] changedSteppers =
-                Arrays.asList(steppers).stream().
-                        filter(Stepper::hasDataChanged).toArray(Stepper[]::new);
+        Stepper[] changedSteppers;
+
+        if (sendAllSteppers)
+            changedSteppers = steppers;
+        else
+            changedSteppers = Arrays.asList(steppers).stream().filter(Stepper::hasDataChanged).toArray(Stepper[]::new);
 
         if (changedSteppers.length == 0)
             return false;
@@ -251,7 +258,7 @@ public class Cluster {
                 return SendPacket(new MoveSteppersArray(changedSteppers), guaranteed);
         }
 
-        return SendPacket(new MoveAllSteppersArray(changedSteppers), guaranteed);
+        return SendPacket(new MoveAllSteppersArray(steppers), guaranteed);
     }
 
     /**
