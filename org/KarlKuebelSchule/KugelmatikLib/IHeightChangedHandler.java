@@ -1,14 +1,12 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by Hendrik on 30.08.2015.
- * Ein Interface für das HeightChangedEvent
+ * Ein Interface fÃ¼r das HeightChangedEvent
  */
 public interface IHeightChangedHandler {
-
     /**
-     * Wird aufgerufen wenn sich die Höhe des Schrittmotors ändert
-     * @param stepper Der Schrittmitor bei welchem die Änderung aufgetreten ist
+     * Wird aufgerufen wenn sich die HÃ¶he des Schrittmotors Ã¤ndert
+     * @param stepper Der Stepper bei dem eine Ã„nderung aufgetreten ist
      */
-    void OnHeightChanged(Stepper stepper);
+    void onHeightChanged(Stepper stepper);
 }

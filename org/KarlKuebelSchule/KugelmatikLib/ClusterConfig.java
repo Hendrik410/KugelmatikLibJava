@@ -5,7 +5,6 @@ import com.sun.istack.internal.NotNull;
 import java.security.InvalidParameterException;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Stellt die Konfiguration eines Clusters da
  */
 public class ClusterConfig {
@@ -15,9 +14,9 @@ public class ClusterConfig {
     private boolean useBreak;
 
     /**
-     * Erstellt eine neue ClusterConfig-Instanz mit Standartwerten
+     * Erstellt eine neue ClusterConfig-Instanz mit Standardwerten
      */
-    public ClusterConfig(){
+    public ClusterConfig() {
         stepMode = StepMode.HalfStep;
         tickTime = 4000;
         useBreak = false;
@@ -25,9 +24,10 @@ public class ClusterConfig {
 
     /**
      * Erstellt eine neue ClusterConfig-Instanz
-     * @param stepMode Der Schrittmodus der Motoren des Clusters
+     *
+     * @param stepMode  Der Schrittmodus der Motoren des Clusters
      * @param delayTime Die Delaytime des Clusters
-     * @param useBreak Ob das Cluster die Bremsen benutzen soll
+     * @param useBreak  Ob das Cluster die Bremsen benutzen soll
      */
     public ClusterConfig(@NotNull StepMode stepMode, int delayTime, boolean useBreak) {
         if (delayTime < 50 || delayTime > 15000)

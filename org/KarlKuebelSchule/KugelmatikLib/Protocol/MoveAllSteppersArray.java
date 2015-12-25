@@ -2,15 +2,13 @@ package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
 import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.Cluster;
-import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.Stepper;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
 
 /**
  * Created by Henrik Kunzelmann on 20.12.2015.
- * Befehl zum Bewegen aller Kugeln mit unterschiedlicher Hoehe und Wartezeit.
+ * Befehl zum Bewegen aller Stepper mit unterschiedlicher Hoehe und Waittime.
  */
 public class MoveAllSteppersArray extends Packet {
     private short[] heights;
@@ -58,7 +56,7 @@ public class MoveAllSteppersArray extends Packet {
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
         for (int i = 0; i < heights.length; i++) {
-            buffer.putShort(heights[i]);
+            buffer.putShort(BinaryHelper.flipByteOrder(heights[i]));
             buffer.put(waitTimes[i]);
         }
     }

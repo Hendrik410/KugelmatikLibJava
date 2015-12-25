@@ -1,13 +1,12 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 import com.sun.istack.internal.NotNull;
+import com.sun.xml.internal.ws.handler.HandlerException;
 
 /**
- * Created by Hendrik on 29.08.2015.
- * Repräsentiert einen Schrittmotor eines Clusters
+ * ReprÃ¤sentiert einen Schrittmotor eines Clusters
  */
 public class Stepper {
-
     private byte x;
     private byte y;
 
@@ -16,16 +15,18 @@ public class Stepper {
 
     private Cluster cluster;
 
+    private short lastHeight = 0;
     private short height = 0;
+
+    private byte lastWaitTime = 0;
     private byte waitTime = 0;
-    private boolean dataChanged = false;
 
     private IHeightChangedHandler heightChangedHandler;
 
-    public Stepper(@NotNull Cluster cluster, byte x, byte y){
-        if(x < 0 || x >= Cluster.Width)
+    public Stepper(@NotNull Cluster cluster, byte x, byte y) {
+        if (x < 0 || x >= Cluster.Width)
             throw new IllegalArgumentException("x");
-        if(y < 0 || y >= Cluster.Height)
+        if (y < 0 || y >= Cluster.Height)
             throw new IllegalArgumentException("y");
 
         this.cluster = cluster;
@@ -37,57 +38,54 @@ public class Stepper {
     }
 
     /**
-     * Setzt die Werte die Kugel zurück, zum Beispiel nach einem Home-Befehl
+     * Setzt die Werte die Kugel zurÃ¼ck, zum Beispiel nach einem Home-Befehl
      */
-    public void Reset(){
-        setHeight((short)0);
-        dataChanged = false;
+    public void reset() {
+        setHeight(0);
     }
 
     /**
-     * Bewegt die Kugel in eine bestimmte Höhe
-     * @param height Die Höhe der Kugel
+     * Bewegt die Kugel in eine bestimmte HÃ¶he
+     *
+     * @param height Die HÃ¶he der Kugel
      */
-    public synchronized void MoveTo(short height){
-        MoveTo(height, Config.DefaultWaitTime);
+    public synchronized void set(int height) {
+        set(height, Config.DefaultWaitTime);
     }
 
     /**
-     * Bewegt die Kugel in eine bestimmte Höhe zu einer bestimmten Zeit
-     * @param height Die Höhe der Kugel
+     * Bewegt die Kugel in eine bestimmte HÃ¶he zu einer bestimmten Zeit
+     *
+     * @param height   Die HÃ¶he der Kugel
      * @param waitTime Die Zeit die gewartet werden soll
      */
-    public synchronized void MoveTo(short height, byte waitTime){
-        if(height > Config.MaxHeight)
+    public synchronized void set(int height, byte waitTime) {
+        if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
-
-        if(this.height == height && this.waitTime == waitTime)
-            return;
+        if (waitTime < 0)
+            throw new IllegalArgumentException("waitTime is out of range");
 
         setHeight(height);
         this.waitTime = waitTime;
-        dataChanged = true;
-        cluster.ChildHasChanged();
     }
 
     /**
      * Setzte die Kugel auf Home.
      */
-    public void SendHome(){
-        cluster.SendHome(x, y);
-        Reset();
+    public void sendHome() {
+        cluster.sendHome(x, y);
     }
 
     /**
      * Wickelt die Kugel auf und wieder ab.
      */
-    public void SendFix(){
-        cluster.SendFix(x, y);
-        Reset();
+    public void sendFix() {
+        cluster.sendFix(x, y);
     }
 
     /**
      * Setzt den HeightChangedEventHandler
+     *
      * @param heightChangedHandler Der HeightChangedEventHandler
      */
     public void setHeightChangedHandler(IHeightChangedHandler heightChangedHandler) {
@@ -95,7 +93,7 @@ public class Stepper {
     }
 
     /**
-     * Gibt die WaitTime zurück.
+     * Gibt die WaitTime zurÃ¼ck.
      */
     public byte getWaitTime() {
         return waitTime;
@@ -103,6 +101,7 @@ public class Stepper {
 
     /**
      * Setzt die waitTime der Kugel, sendet jedoch keinen Befehl an das Cluster.
+     *
      * @param waitTime Die waitTime der Kugel
      */
     public void setWaitTime(byte waitTime) {
@@ -110,70 +109,76 @@ public class Stepper {
     }
 
     /**
-     * Gibt zurück ob sich die Höhe der Kugel seit dem letzten Senden verändert hat.
+     * Gibt zurÃ¼ck ob sich die HÃ¶he der Kugel seit dem letzten Senden verÃ¤ndert hat.
      */
     public boolean hasDataChanged() {
-        return dataChanged;
+        return lastHeight != height || lastWaitTime != waitTime;
     }
 
     /**
-     * Legt fest, das die Änderungen an das Cluster gesendet wurden.
+     * Wird aufgerufen, wenn das Cluster Daten gesendet hat.
      */
-    public void Updated(){
-        dataChanged = false;
+    public void internalOnDataSent() {
+        lastHeight = height;
+        lastWaitTime = waitTime;
     }
 
     /**
-     * Gibt die Höhe der Kugel zurück.
+     * Gibt die HÃ¶he der Kugel zurÃ¼ck.
      */
     public short getHeight() {
         return height;
     }
 
     /**
-     * Setzt die Höhe der Kugel, sendet jedoch keinen Befehl an das Cluster.
-     * @param height Die Höhe der Kugel
+     * Setzt die HÃ¶he der Kugel, sendet jedoch keinen Befehl an das Cluster.
+     *
+     * @param height Die HÃ¶he der Kugel
      */
-    public void setHeight(short height) {
-        if(this.height != height){
-            this.height = height;
-            if(heightChangedHandler != null)
-                heightChangedHandler.OnHeightChanged(this);
+    public void setHeight(int height) {
+        if (height < 0 || height > Config.MaxHeight)
+            throw new IllegalArgumentException("height is out of range");
+
+        if (this.height != height) {
+            this.height = (short)height;
+
+            if (heightChangedHandler != null)
+                heightChangedHandler.onHeightChanged(this);
         }
     }
 
     /**
-     * Gibt die x-Koordinate des Motors in einem Cluster zurück
+     * Gibt die x-Koordinate des Motors in einem Cluster zurÃ¼ck
      */
-    public byte getX(){
+    public byte getX() {
         return x;
     }
 
     /**
-     * Gibt die y-Koordinate des Motors in einem Cluster zurück.
+     * Gibt die y-Koordinate des Motors in einem Cluster zurÃ¼ck.
      */
-    public byte getY(){
+    public byte getY() {
         return y;
     }
 
     /**
-     * Gibt die absolute x-Koordinate der Postion des Steppers zurück
+     * Gibt die absolute x-Koordinate der Postion des Steppers zurÃ¼ck
      */
-    public int getAbsoluteX(){
+    public int getAbsoluteX() {
         return absoluteX;
     }
 
     /**
-     * Gibt die absolute y-Koordinate der Postion des Steppers zurück
+     * Gibt die absolute y-Koordinate der Postion des Steppers zurÃ¼ck
      */
     public int getAbsoluteY() {
         return absoluteY;
     }
 
     /**
-     * Gibt das zugehörige Cluster zurück.
+     * Gibt das zugehï¿½rige Cluster zurÃ¼ck.
      */
-    public Cluster getCluster(){
+    public Cluster getCluster() {
         return cluster;
     }
 }

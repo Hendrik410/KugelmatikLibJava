@@ -4,20 +4,19 @@ import org.KarlKuebelSchule.KugelmatikLib.BinaryHelper;
 import org.KarlKuebelSchule.KugelmatikLib.Config;
 
 import java.nio.ByteBuffer;
-import java.security.InvalidParameterException;
 
 /**
- * Created by Hendrik on 30.08.2015.
- * Befehl um alle Stepper des Clusters auf eine Höhe zu bringen
+ * Befehl um alle Stepper des Clusters auf eine HÃ¶he zu bringen
  */
 public class MoveAllSteppers extends Packet {
-
-    short height;
-    byte waitTime;
+    private short height;
+    private byte waitTime;
 
     public MoveAllSteppers(short height, byte waitTime){
-        if(height > Config.MaxHeight)
-            throw new InvalidParameterException("height is out of range");
+        if (height < 0 || height > Config.MaxHeight)
+            throw new IllegalArgumentException("height is out of range");
+        if (waitTime < 0)
+            throw new IllegalArgumentException("waitTimes is out of range");
 
         this.height = height;
         this.waitTime = waitTime;
@@ -35,7 +34,7 @@ public class MoveAllSteppers extends Packet {
 
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
-        buffer.putShort(BinaryHelper.FlipByteOrder(height));
+        buffer.putShort(BinaryHelper.flipByteOrder(height));
         buffer.put(waitTime);
     }
 }

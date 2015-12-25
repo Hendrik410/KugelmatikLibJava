@@ -1,58 +1,57 @@
 package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
 /**
- * Created by Hendrik on 30.08.2015.
- * Eine Enumeration aller Möglichen Pakettypen
+ * Eine Enumeration aller Mï¿½glichen Pakettypen
  */
-public enum PacketType{
-    Ping ((byte)1),
-    Ack ((byte)2),
+public enum PacketType {
+    Ping((byte) 1),
+    Ack((byte) 2),
 
-    Stepper ((byte)3),
-    Steppers ((byte)4),
-    SteppersArray ((byte)5),
-    SteppersRectangle ((byte)6),
-    SteppersRectangleArray ((byte)7),
-    AllSteppers ((byte)8),
-    AllSteppersArray ((byte)9),
+    Stepper((byte) 3),
+    Steppers((byte) 4),
+    SteppersArray((byte) 5),
+    SteppersRectangle((byte) 6),
+    SteppersRectangleArray((byte) 7),
+    AllSteppers((byte) 8),
+    AllSteppersArray((byte) 9),
 
-    Home ((byte)10),
+    Home((byte) 10),
 
-    ResetRevision ((byte)11),
-    Fix ((byte)12),
+    ResetRevision((byte) 11),
+    Fix((byte) 12),
 
-    HomeStepper ((byte)13),
+    HomeStepper((byte) 13),
 
-    GetData ((byte)14),
-    Info ((byte)15),
-    Config ((byte)16),
+    GetData((byte) 14),
+    Info((byte) 15),
+    Config((byte) 16),
 
-    BlinkGreen ((byte)17),
-    BlinkRed ((byte)18),
+    BlinkGreen((byte) 17),
+    BlinkRed((byte) 18),
 
-    Stop ((byte)19);
-    
+    Stop((byte) 19);
+
     private byte numVal;
 
-    PacketType(byte numVal){
+    PacketType(byte numVal) {
         this.numVal = numVal;
     }
 
     /**
-     * Gibt den byte-Wert des Eintrags zurück.
-     * @return Der byte-Wert des Eintrags
+     * Gibt den Byte-Wert des Eintrags zurÃ¼ck.
+     *
+     * @return Der Byte-Wert des Eintrags
      */
-    public byte getByteValue(){
+    public byte getByteValue() {
         return numVal;
     }
 
 
     /**
-     * Gibt zurück ob das Cluster auf den Befehl antwortet.
+     * Gibt einen Wert zurÃ¼ck, der angibt, ob das Cluster auf den Befehl antwortet.
      */
-    public boolean DoesClusterAnswer(){
-        switch(this)
-        {
+    public boolean doesClusterAnswer() {
+        switch (this) {
             case Ping:
             case Info:
             case GetData:
@@ -63,11 +62,10 @@ public enum PacketType{
     }
 
     /**
-     * Gibt zurück ob der Befehl ein busy-Befehl ist
+     * Gibt einen Wert zurÃ¼ck, der angibt, ob der Befehl ein Busy-Befehl ist
      */
-    public boolean IsBusyCommand(){
-        switch(this)
-        {
+    public boolean isBusyCommand() {
+        switch (this) {
             case Home:
             case Fix:
             case HomeStepper:
@@ -78,11 +76,10 @@ public enum PacketType{
     }
 
     /**
-     * Gibt zurück ob der Befehl während eines busy-Befehls gesendet werden kann
+     * Gibt einen Wert zurÃ¼ck, der angibt, ob der Befehl wÃ¤hrend eines Busy-Befehls gesendet werden kann
      */
-    public boolean CanSendWhileBusy(){
-        switch(this)
-        {
+    public boolean canSendWhileBusy() {
+        switch (this) {
             case Ping:
             case Info:
             case Stop:

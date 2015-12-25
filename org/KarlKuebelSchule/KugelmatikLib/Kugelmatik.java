@@ -5,11 +5,9 @@ import com.sun.istack.internal.NotNull;
 import java.net.SocketException;
 
 /**
- * Created by Hendrik on 29.08.2015.
- * Repräsentiert eine Kugelmatik
+ * ReprÃ¤sentiert eine Kugelmatik
  */
 public class Kugelmatik {
-
     private Cluster[] clusters;
 
     private Log log;
@@ -17,138 +15,181 @@ public class Kugelmatik {
     public Kugelmatik(@NotNull IAddressProvider addressProvider, Log log) throws SocketException {
         this.log = log;
         clusters = new Cluster[Config.KugelmatikHeight * Config.KugelmatikWidth];
-        for(int x = 0; x < Config.KugelmatikWidth; x++){
-            for(int y = 0; y < Config.KugelmatikHeight; y++){
-                clusters[y * Config.KugelmatikWidth + x] = new Cluster(this, addressProvider.GetAddress(x, y), x, y);
-            }
-        }
+
+        getLog().verbose("Creating clusters with address provider " + addressProvider.getClass().getSimpleName());
+        for (int x = 0; x < Config.KugelmatikWidth; x++)
+            for (int y = 0; y < Config.KugelmatikHeight; y++)
+                clusters[y * Config.KugelmatikWidth + x] = new Cluster(this, addressProvider.getAddress(x, y), x, y);
     }
 
     /**
      * Sendet ein Ping an alle Cluster
      */
-    public void SendPing(){
-        for(Cluster cluster : clusters){
-            cluster.SendPing();
-        }
+    public void sendPing() {
+        getLog().verbose("Kugelmatik.sendPing()");
+        for (Cluster cluster : clusters)
+            cluster.sendPing();
     }
 
     /**
-     * Lässt die grüne LED aller Cluster blinken
+     * LÃ¤sst die grÃ¼ne LED aller Cluster blinken
      */
-    public void BlinkGreen(){
-        for(Cluster cluster : clusters)
-            cluster.BlinkGreen();
+    public void blinkGreen() {
+        getLog().verbose("Kugelmatik.blinkGreen()");
+        for (Cluster cluster : clusters)
+            cluster.blinkGreen();
     }
 
     /**
-     * Lässt die rote LED aller Cluster blinken
+     * LÃ¤sst die rote LED aller Cluster blinken
      */
-    public void BlinkRed(){
-        for(Cluster cluster : clusters){
-            cluster.BlinkRed();
-        }
+    public void blinkRed() {
+        getLog().verbose("Kugelmatik.sendRed()");
+        for (Cluster cluster : clusters)
+            cluster.blinkRed();
     }
 
     /**
-     * Sendet alle nicht bestätigten Packets neu
-     * @return Gibt true zurück, wenn ein Packet gesendet wurde
+     * Sendet alle nicht bestÃ¤tigten Packets neu
+     *
+     * @return Gibt true zurÃ¼ck, wenn ein Packet gesendet wurde
      */
-    public boolean ResendPackets(){
+    public boolean resendPackets() {
+        getLog().verbose("Kugelmatik.resendPackets()");
+
+        boolean anyPacketsSent = false;
+        for (Cluster cluster : clusters)
+            anyPacketsSent |= cluster.resendPackets();
+
+        getLog().verbose("anyPacketSent = " + anyPacketsSent);
+        return anyPacketsSent;
+    }
+
+    /**
+     * Setzt die HÃ¶he aller Stepper auf eine HÃ¶he
+     *
+     * @param height Die HÃ¶he auf die alle Stepper gesetzt werden sollen
+     */
+    public void setAllSteppers(int height) {
+        setAllSteppers(height, Config.DefaultWaitTime);
+    }
+
+    public void setAllSteppers(int height, byte waitTime) {
+        getLog().verbose("moveAllSteppers(height = %d, waitTime = %d)", height, waitTime);
+        for (Cluster cluster : clusters)
+            cluster.setAllSteppers(height);
+    }
+
+    /**
+     * Sendet alle HÃ¶henÃ¤nderungen ohne Garantie, dass das Paket ankommen wird.
+     *
+     * @return Gibt true zurÃ¼ck, wenn ein Packet gesendet wurde
+     */
+    public boolean sendMovementData() {
+        return sendMovementData(false);
+    }
+
+    /**
+     * Sendet alle HÃ¶henÃ¤nderungen an die Cluster
+     *
+     * @param guaranteed Gibt an, ob eine BestÃ¤tigung gesendet werden soll
+     * @return Gibt true zurÃ¼ck, wenn ein Packet gesendet wurde
+     */
+    public boolean sendMovementData(boolean guaranteed) {
+        return sendMovementData(guaranteed, false);
+    }
+
+    /**
+     * Sendet alle HÃ¶henÃ¤nderungen an die Cluster
+     *
+     * @param guaranteed Gibt an, ob eine BestÃ¤tigung gesendet werden soll
+     * @param sendAllSteppers Gibt an, ob alle Stepper gesendet werden sollen, auch wenn die Daten sich nicht geÃ¤ndert haben.
+     * @return Gibt true zurÃ¼ck, wenn ein Packet gesendet wurde
+     */
+    public boolean sendMovementData(boolean guaranteed, boolean sendAllSteppers) {
         boolean anyPacketsSend = false;
-        for(Cluster cluster : clusters)
-            anyPacketsSend |= cluster.ResendPackets();
+        for (Cluster cluster : clusters)
+            anyPacketsSend |= cluster.sendMovementData(guaranteed, sendAllSteppers);
         return anyPacketsSend;
     }
 
     /**
-     * Setzt die Höhe aller Stepper auf eine Höhe
-     * @param height Die Höhe auf die alle Stepper gesetzt werden sollen
+     * Gibt true zurÃ¼ck, wenn es nicht beantwortete Packets gibt
      */
-    public void MoveAllSteppers(short height){
-        for(Cluster cluster : clusters)
-            cluster.MoveAllSteppers(height);
-    }
-
-    /**
-     * Sendet alle Höhenänderungen ohne Garantie
-     * @return Gibt true zurück, wenn ein Packet gesendet wurde
-     */
-    public boolean SendMovementData(){
-        return SendMovementData(false);
-    }
-
-    /**
-     * Sendet alle Höhenänderungen and die Cluster
-     * @param guaranteed Gibt an, ob eine Bestätigung gesendet werden soll
-     * @return Gibt true zurück, wenn ein Packet gesendet wurde
-     */
-    public boolean SendMovementData(boolean guaranteed){
-        boolean anyPacketsSend = false;
-        for(Cluster cluster : clusters)
-            anyPacketsSend |= cluster.SendMovementData(guaranteed);
-        return anyPacketsSend;
-    }
-
-    /**
-     * Gibt true zurück, wenn es nicht beantwortete Packets gibt
-     */
-    public boolean AnyPacketsPending(){
-        for(Cluster cluster : clusters)
-            if(cluster.AnyPacketsPending())
+    public boolean isAnyPacketPending() {
+        for (Cluster cluster : clusters)
+            if (cluster.isAnyPacketPending())
                 return true;
         return false;
     }
 
     /**
-     * Gibt ein Cluster nach seiner Position zurück
+     * Gibt ein Cluster nach seiner Position zurÃ¼ck
+     *
      * @param x Die x-Position des Clusters
      * @param y Die y-Position des Clusters
      * @return Das Cluster an der Position
      */
-    public Cluster getClusterByPosition(byte x, byte y){
+    public Cluster getClusterByPosition(int x, int y) {
+        if (x < 0 || x >= Config.KugelmatikWidth)
+            throw new IllegalArgumentException("x is ouf of range");
+        if (y < 0 || y >= Config.KugelmatikHeight)
+            throw new IllegalArgumentException("y is out of range");
         return clusters[y * Config.KugelmatikWidth + x];
     }
 
     /**
-     * Gibt einen Stepper nach seiner absoluten Position zurück
+     * Gibt einen Stepper nach seiner absoluten Position zurÃ¼ck
+     *
      * @param x Die x-Position des Steppers
      * @param y Die y-Position des Steppers
-     * @return Der Stepper an der Position
+     * @return Der Stepper an der Position x und y
      */
-    public Stepper getStepperByPosition(int x, int y){
-        byte cx = (byte)(x / Cluster.Width);
-        byte cy = (byte)(y / Cluster.Height);
-        byte sx = (byte)(x % Cluster.Width);
-        byte sy = (byte)(y % Cluster.Height);
+    public Stepper getStepperByPosition(int x, int y) {
+        if (x < 0 || x >= getStepperWidth())
+            throw new IllegalArgumentException("x is ouf of range");
+        if (y < 0 || y >= getStepperHeight())
+            throw new IllegalArgumentException("y is out of range");
+        
+        byte cx = (byte) (x / Cluster.Width);
+        byte cy = (byte) (y / Cluster.Height);
+        byte sx = (byte) (x % Cluster.Width);
+        byte sy = (byte) (y % Cluster.Height);
         return getClusterByPosition(cx, cy).getStepperByPosition(sx, sy);
     }
 
+    public void setStepper(int x, int y, int height) {
+        getStepperByPosition(x, y).set(height);
+    }
+
+    public void setStepper(int x, int y, int height, byte waitTime) {
+        getStepperByPosition(x, y).set(height, waitTime);
+    }
     /**
-     * Gibt die Breite der Kugelmatik in Steppern zurück
+     * Gibt die Breite der Kugelmatik in Steppern zurÃ¼ck
      */
-    public int getStepperWidth(){
+    public int getStepperWidth() {
         return Config.KugelmatikWidth * Cluster.Width;
     }
 
     /**
-     * Gibt die Höhe der Kugelmatik in Steppern zurück
+     * Gibt die HÃ¶he der Kugelmatik in Steppern zurÃ¼ck
      */
-    public int getStepperHeight(){
+    public int getStepperHeight() {
         return Config.KugelmatikHeight * Cluster.Height;
     }
 
     /**
-     * Gibt einen Array mit allen Clustern zurück
+     * Gibt einen Array mit allen Clustern zurÃ¼ck
      */
-    public Cluster[] getAllCluster(){
+    public Cluster[] getAllCluster() {
         return clusters;
     }
 
     /**
-     * Gibt das Log-Objekt der Kugelmatik zurück
+     * Gibt das Log-Objekt der Kugelmatik zurÃ¼ck
      */
-    public Log Log(){
+    public Log getLog() {
         return log;
     }
 }

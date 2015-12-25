@@ -1,7 +1,6 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by Hendrik on 31.08.2015.
  * Stellt den Schrittmodus eines Clusters da
  */
 public enum StepMode {
@@ -16,7 +15,7 @@ public enum StepMode {
     }
 
     /**
-     * Gibt den byte-Wert des Eintrags zurück.
+     * Gibt den byte-Wert des Eintrags zurÃ¼ck.
      * @return Der byte-Wert des Eintrags
      */
     public byte getByteValue(){

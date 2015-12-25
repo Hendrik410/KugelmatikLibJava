@@ -5,11 +5,9 @@ import com.sun.istack.internal.NotNull;
 import java.security.InvalidParameterException;
 
 /**
- * Created by Hendrik on 03.09.2015.
- * Der ChoreographyManager berechnet die Bewegungen für einzelne Choreographien
+ * Der ChoreographyManager berechnet die Bewegungen fÃ¼r eine Chereographie und sendet die Daten an die Kugelmatik.
  */
 public class ChoreographyManager implements Runnable {
-
     private Kugelmatik kugelmatik;
     private IChoreography choreography;
     private int targetFPS;
@@ -22,12 +20,13 @@ public class ChoreographyManager implements Runnable {
 
     /**
      * Erstellt eine neue ChoreographyManager-Instanz
-     * @param kugelmatik Die Kugelmatik auf der die Choreography abgespielt werden soll
-     * @param targetFPS Die Zielframerate die erreicht werden soll
+     *
+     * @param kugelmatik   Die Kugelmatik auf der die Choreography abgespielt werden soll
+     * @param targetFPS    Die Zielframerate die erreicht werden soll
      * @param choreography Die Choreography die abgespielt werden soll
      */
-    public ChoreographyManager(@NotNull Kugelmatik kugelmatik, int targetFPS, @NotNull IChoreography choreography){
-        if(targetFPS <= 0)
+    public ChoreographyManager(@NotNull Kugelmatik kugelmatik, int targetFPS, @NotNull IChoreography choreography) {
+        if (targetFPS <= 0)
             throw new InvalidParameterException("targetFPS is out of range");
 
         this.choreography = choreography;
@@ -39,7 +38,7 @@ public class ChoreographyManager implements Runnable {
     /**
      * Startet die Choreography
      */
-    public void Start(){
+    public void Start() {
         stopRequested = false;
         thread.start();
     }
@@ -47,80 +46,77 @@ public class ChoreographyManager implements Runnable {
     /**
      * Zeigt den ersten Frame der Choreography
      */
-    public void StartOnlyFirstFrame(){
+    public void StartOnlyFirstFrame() {
         stopRequested = true;
         thread.start();
     }
 
     /**
-     * Hält die Choreography an
+     * HÃ¤lt die Choreography an
      */
-    public void Stop(){
+    public void Stop() {
         stopRequested = true;
     }
 
     /**
-     * Gibt zurück, ob die Choreography läuft
+     * Gibt zurÃ¼ck, ob die Choreography lÃ¤uft
      */
-    public boolean isChoreographyRunning(){
+    public boolean isChoreographyRunning() {
         return choreographyRunning;
     }
 
     /**
-     * Gibt die aktuelle Framerate zurück
+     * Gibt die aktuelle Framerate zurÃ¼ck
      */
-    public int getFps(){
+    public int getFPS() {
         return fps;
+    }
+
+    private void setSteppers() {
+        for (int x = 0; x < kugelmatik.getStepperWidth(); x++)
+            for (int y = 0; y < kugelmatik.getStepperHeight(); y++)
+                kugelmatik.getStepperByPosition(x, y).set(choreography.getHeight(x, y, 0, this));
     }
 
     @Override
     public void run() {
-        for(int x = 0; x < kugelmatik.getStepperWidth(); x++) {
-            for(int y = 0; y < kugelmatik.getStepperHeight(); y++) {
-                kugelmatik.getStepperByPosition(x, y).MoveTo(choreography.GetHeight(x, y, 0, this));
-            }
-        }
+        setSteppers();
 
-        kugelmatik.SendMovementData(true);
-        while(kugelmatik.AnyPacketsPending()){
+        kugelmatik.sendMovementData(true);
+        while (kugelmatik.isAnyPacketPending()) {
             sleep(500);
-            kugelmatik.ResendPackets();
+            kugelmatik.resendPackets();
         }
 
         sleep(5000);
         choreographyRunning = true;
         long startTime = System.currentTimeMillis();
 
-        while(!stopRequested){
+        while (!stopRequested) {
             long frameStartTime = System.currentTimeMillis();
             long timeRunning = System.currentTimeMillis() - startTime;
 
-            for(int x = 0; x < kugelmatik.getStepperWidth(); x++) {
-                for(int y = 0; y < kugelmatik.getStepperHeight(); y++) {
-                    kugelmatik.getStepperByPosition(x, y).MoveTo(choreography.GetHeight(x, y, timeRunning, this));
-                }
-            }
-            kugelmatik.SendMovementData();
+            setSteppers();
+            kugelmatik.sendMovementData();
 
-            if(timeRunning % 2 == 0)
-                kugelmatik.SendPing();
+            if (timeRunning % 2 == 0)
+                kugelmatik.sendPing();
 
-
-            int sleepTime = (int)(1000f / targetFPS) - (int)(System.currentTimeMillis() - frameStartTime); // berechnen wie lange der Thread schlafen soll um die TargetFPS zu erreichen
+            int sleepTime = (int) (1000f / targetFPS) - (int) (System.currentTimeMillis() - frameStartTime); // berechnen wie lange der Thread schlafen soll um die TargetFPS zu erreichen
             if (sleepTime > 0)
                 sleep(sleepTime);
 
-            fps = (int)Math.ceil(1000f / (int)(System.currentTimeMillis() - frameStartTime));
+            fps = (int) Math.ceil(1000f / (int) (System.currentTimeMillis() - frameStartTime));
 
         }
         choreographyRunning = false;
     }
 
-    private void sleep(long timeout){
+    private void sleep(long timeout) {
         try {
             Thread.sleep(timeout);
-        } catch(InterruptedException e) {
-            kugelmatik.Log().Err(e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

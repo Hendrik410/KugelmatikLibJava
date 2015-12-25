@@ -1,7 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by Hendrik on 29.08.2015.
+ * Stellt Einstellungen für die Kugelmatik dar.
  */
 public class Config {
     public static int ProtocolPort = 14804;

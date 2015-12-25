@@ -3,8 +3,7 @@ package org.KarlKuebelSchule.KugelmatikLib;
 import com.sun.istack.internal.NotNull;
 
 /**
- * Created by Hendrik on 31.08.2015.
- * Enh�lt alle Informationen �ber das Cluster
+ * Enhält alle Informationen über das Cluster
  */
 public class ClusterInfo {
     private byte buildVersion;
@@ -24,7 +23,7 @@ public class ClusterInfo {
     }
 
     /**
-     * Gibt die BuildVersion der Firmware zur�ck
+     * Gibt die BuildVersion der Firmware zurück
      */
     public byte getBuildVersion() {
         return buildVersion;
@@ -38,28 +37,28 @@ public class ClusterInfo {
     }
 
     /**
-     * Gibt die h�chste empfangene Revision des Clusters zur�ck
+     * Gibt die höchste empfangene Revision des Clusters zurück
      */
     public int getHighestRevision() {
         return highestRevision;
     }
 
     /**
-     * Gibt die Konfiguration des Clusters zur�ck
+     * Gibt die Konfiguration des Clusters zurück
      */
     public ClusterConfig getConfig() {
         return config;
     }
 
     /**
-     * Gibt den ErrorCode zurueck, welcher am Cluster zuletzt aufgetreten ist
+     * Gibt den ErrorCode zurueck, welcher am Cluster zuletzt aufgetreten i.st
      */
     public ErrorCode getLastErrorCode() {
         return lastErrorCode;
     }
 
     /**
-     * Gibt einen Wert in Bytes zurück, welcher den freien Arbeitsspeicher auf dem Cluster angibt
+     * Gibt einen Wert in Bytes zurück, wie viel freier Arbeitsspeicher auf dem Cluster verfügbar ist.
      */
     public int getFreeRam() {
         return freeRam;

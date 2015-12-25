@@ -4,17 +4,13 @@ import org.KarlKuebelSchule.KugelmatikLib.ChoreographyManager;
 import org.KarlKuebelSchule.KugelmatikLib.Config;
 import org.KarlKuebelSchule.KugelmatikLib.IChoreography;
 
-import java.security.InvalidParameterException;
-
 /**
- * Created by Hendrik on 03.09.2015.
  * Stellt eine sich bewegende Sinuswelle da
  */
 public class SineWave implements IChoreography {
-
-    WaveDirection direction;
-    float timeFactor;
-    float frequency;
+    private WaveDirection direction;
+    private float timeFactor;
+    private float frequency;
 
     /**
      * Erstellt eine neue SineWave-Instanz
@@ -24,7 +20,7 @@ public class SineWave implements IChoreography {
      */
     public SineWave(WaveDirection direction, float timeFactor, float frequency){
         if(frequency == 0)
-            throw new InvalidParameterException("frequency is out of range");
+            throw new IllegalArgumentException("frequency is out of range");
 
         this.direction = direction;
         this.timeFactor = timeFactor;
@@ -32,18 +28,18 @@ public class SineWave implements IChoreography {
     }
 
     @Override
-    public short GetHeight(int x, int y, long millis, ChoreographyManager choreographyManager) {
+    public int getHeight(int x, int y, long millis, ChoreographyManager choreographyManager) {
         float v = x;
         if (direction == WaveDirection.Y)
             v = y;
 
-        // Sinuswelle erstellen
+        // Sinuswelle berechnen
         double sinWave = Math.sin((v + millis * timeFactor) * frequency);
 
         sinWave += 1; // in den Bereich [0, 2] verschieben
         sinWave /= 2; // normalisieren
 
-        return (short)(sinWave * Config.MaxHeight);
+        return (int)(sinWave * Config.MaxHeight);
     }
 
 }

@@ -1,7 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 /**
- * Created by henrik.kunzelmann on 20.12.2015.
+ * Gibt die Fehler an, die auf beim Betrieb eines Clusters auftreten können.
  */
 public enum ErrorCode {
     None((byte)0),
@@ -19,7 +19,7 @@ public enum ErrorCode {
 
     private byte value;
 
-    private ErrorCode(byte value) {
+    ErrorCode(byte value) {
         this.value = value;
     }
 

@@ -1,13 +1,11 @@
 package org.KarlKuebelSchule.KugelmatikLib.Protocol;
 
-import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Hendrik on 30.08.2015.
+ * Paket zum Berechnen der Rundlaufzeit.
  */
 public class Ping extends Packet {
-
     private long time;
 
     public Ping(long time){
