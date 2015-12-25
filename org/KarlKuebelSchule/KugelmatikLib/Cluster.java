@@ -187,7 +187,7 @@ public class Cluster {
      *
      * @param height Die Höhe zu der sich die Kugeln bewegen sollen
      */
-    public void moveAllSteppers(short height) {
+    public void moveAllSteppers(int height) {
         if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
 
@@ -315,7 +315,7 @@ public class Cluster {
         sendPacket(new Home(), true);
 
         for (Stepper stepper : steppers)
-            stepper.setHeight(((short) 0));
+            stepper.setHeight(0);
     }
 
     /**
@@ -436,7 +436,7 @@ public class Cluster {
 
 
                             short height = BinaryHelper.flipByteOrder(input.readShort());
-                            if (height > Config.MaxHeight)
+                            if (height < 0 || height > Config.MaxHeight)
                                 continue; // Höhe ignorieren
 
                             byte waitTime = input.readByte();

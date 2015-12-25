@@ -31,7 +31,7 @@ public class SineWave implements IChoreography {
     }
 
     @Override
-    public short getHeight(int x, int y, long millis, ChoreographyManager choreographyManager) {
+    public int getHeight(int x, int y, long millis, ChoreographyManager choreographyManager) {
         float v = x;
         if (direction == WaveDirection.Y)
             v = y;
@@ -42,7 +42,7 @@ public class SineWave implements IChoreography {
         sinWave += 1; // in den Bereich [0, 2] verschieben
         sinWave /= 2; // normalisieren
 
-        return (short)(sinWave * Config.MaxHeight);
+        return (int)(sinWave * Config.MaxHeight);
     }
 
 }

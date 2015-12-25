@@ -72,7 +72,7 @@ public class Kugelmatik {
      *
      * @param height Die Höhe auf die alle Stepper gesetzt werden sollen
      */
-    public void moveAllSteppers(short height) {
+    public void moveAllSteppers(int height) {
         getLog().verbose("moveAllSteppers(height = " + height + ")");
         for (Cluster cluster : clusters)
             cluster.moveAllSteppers(height);
@@ -128,7 +128,7 @@ public class Kugelmatik {
      * @param y Die y-Position des Clusters
      * @return Das Cluster an der Position
      */
-    public Cluster getClusterByPosition(byte x, byte y) {
+    public Cluster getClusterByPosition(int x, int y) {
         if (x < 0 || x >= Config.KugelmatikWidth)
             throw new IllegalArgumentException("x is ouf of range");
         if (y < 0 || y >= Config.KugelmatikHeight)
@@ -156,6 +156,13 @@ public class Kugelmatik {
         return getClusterByPosition(cx, cy).getStepperByPosition(sx, sy);
     }
 
+    public void moveStepper(int x, int y, int height) {
+        getStepperByPosition(x, y).moveTo(height);
+    }
+
+    public void moveStepper(int x, int y, int height, byte waitTime) {
+        getStepperByPosition(x, y).moveTo(height, waitTime);
+    }
     /**
      * Gibt die Breite der Kugelmatik in Steppern zurück
      */

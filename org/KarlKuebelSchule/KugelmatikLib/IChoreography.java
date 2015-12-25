@@ -13,5 +13,5 @@ public interface IChoreography {
      * @param choreographyManager Der ChoreographyManager der die Choreography abspielt
      * @return Die Höhe der Kugel an der Position x und y
      */
-    short getHeight(int x, int y, long millis, ChoreographyManager choreographyManager);
+    int getHeight(int x, int y, long millis, ChoreographyManager choreographyManager);
 }

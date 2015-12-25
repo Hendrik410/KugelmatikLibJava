@@ -39,7 +39,7 @@ public class Stepper {
      * Setzt die Werte die Kugel zurück, zum Beispiel nach einem Home-Befehl
      */
     public void reset() {
-        setHeight((short) 0);
+        setHeight(0);
         dataChanged = false;
     }
 
@@ -48,7 +48,7 @@ public class Stepper {
      *
      * @param height Die Höhe der Kugel
      */
-    public synchronized void moveTo(short height) {
+    public synchronized void moveTo(int height) {
         moveTo(height, Config.DefaultWaitTime);
     }
 
@@ -58,7 +58,7 @@ public class Stepper {
      * @param height   Die Höhe der Kugel
      * @param waitTime Die Zeit die gewartet werden soll
      */
-    public synchronized void moveTo(short height, byte waitTime) {
+    public synchronized void moveTo(int height, byte waitTime) {
         if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
         if (waitTime < 0)
@@ -137,9 +137,13 @@ public class Stepper {
      *
      * @param height Die Höhe der Kugel
      */
-    public void setHeight(short height) {
+    public void setHeight(int height) {
+        if (height < 0 || height > Config.MaxHeight)
+            throw new IllegalArgumentException("height is out of range");
+
         if (this.height != height) {
-            this.height = height;
+            this.height = (short)height;
+
             if (heightChangedHandler != null)
                 heightChangedHandler.onHeightChanged(this);
         }
