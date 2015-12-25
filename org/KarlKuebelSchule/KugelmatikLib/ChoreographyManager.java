@@ -117,7 +117,7 @@ public class ChoreographyManager implements Runnable {
         try {
             Thread.sleep(timeout);
         } catch (InterruptedException e) {
-            kugelmatik.getLog().Err(e);
+            e.printStackTrace();
         }
     }
 }

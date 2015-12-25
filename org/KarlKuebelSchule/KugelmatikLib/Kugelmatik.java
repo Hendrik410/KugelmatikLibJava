@@ -17,17 +17,18 @@ public class Kugelmatik {
     public Kugelmatik(@NotNull IAddressProvider addressProvider, Log log) throws SocketException {
         this.log = log;
         clusters = new Cluster[Config.KugelmatikHeight * Config.KugelmatikWidth];
-        for (int x = 0; x < Config.KugelmatikWidth; x++) {
-            for (int y = 0; y < Config.KugelmatikHeight; y++) {
+
+        getLog().verbose("Creating clusters with address provider " + addressProvider.getClass().getSimpleName());
+        for (int x = 0; x < Config.KugelmatikWidth; x++)
+            for (int y = 0; y < Config.KugelmatikHeight; y++)
                 clusters[y * Config.KugelmatikWidth + x] = new Cluster(this, addressProvider.getAddress(x, y), x, y);
-            }
-        }
     }
 
     /**
      * Sendet ein Ping an alle Cluster
      */
     public void sendPing() {
+        getLog().verbose("Kugelmatik.sendPing()");
         for (Cluster cluster : clusters)
             cluster.sendPing();
     }
@@ -36,6 +37,7 @@ public class Kugelmatik {
      * Lässt die grüne LED aller Cluster blinken
      */
     public void blinkGreen() {
+        getLog().verbose("Kugelmatik.blinkGreen()");
         for (Cluster cluster : clusters)
             cluster.blinkGreen();
     }
@@ -44,6 +46,7 @@ public class Kugelmatik {
      * Lässt die rote LED aller Cluster blinken
      */
     public void blinkRed() {
+        getLog().verbose("Kugelmatik.sendRed()");
         for (Cluster cluster : clusters)
             cluster.blinkRed();
     }
@@ -54,10 +57,14 @@ public class Kugelmatik {
      * @return Gibt true zurück, wenn ein Packet gesendet wurde
      */
     public boolean resendPackets() {
-        boolean anyPacketsSend = false;
+        getLog().verbose("Kugelmatik.resendPackets()");
+
+        boolean anyPacketsSent = false;
         for (Cluster cluster : clusters)
-            anyPacketsSend |= cluster.resendPackets();
-        return anyPacketsSend;
+            anyPacketsSent |= cluster.resendPackets();
+
+        getLog().verbose("anyPacketSent = " + anyPacketsSent);
+        return anyPacketsSent;
     }
 
     /**
@@ -66,6 +73,7 @@ public class Kugelmatik {
      * @param height Die Höhe auf die alle Stepper gesetzt werden sollen
      */
     public void moveAllSteppers(short height) {
+        getLog().verbose("moveAllSteppers(height = " + height + ")");
         for (Cluster cluster : clusters)
             cluster.moveAllSteppers(height);
     }

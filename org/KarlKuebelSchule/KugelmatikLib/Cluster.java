@@ -10,7 +10,6 @@ import java.net.*;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -21,7 +20,7 @@ public class Cluster {
     public static final byte Width = 5;
     public static final byte Height = 6;
 
-    private Kugelmatik Kugelmatik;
+    private Kugelmatik kugelmatik;
     private int x;
     private int y;
 
@@ -36,7 +35,6 @@ public class Cluster {
     private int currentRevision = 0;
     private long lastSuccessfulPingTime = -1;
     private int ping = -1;
-    private boolean dataChanged;
 
     private Map<Integer, Packet> packetsToAcknowledge;
     private Map<Integer, Long> packetsSentTimes;
@@ -44,10 +42,10 @@ public class Cluster {
     /**
      * Gibt eine neue Instanz eines Clusters zurück
      *
-     * @param kugelmatik Die Kugelmatik zu der
+     * @param kugelmatik Die kugelmatik zu der
      * @param address    Die InetAdresse des Clusters
-     * @param x          Die x-Koordinate der Position des Clusters in der Kugelmatik
-     * @param y          Die y-Koordinate der Position der Clusters in der Kugelmatik
+     * @param x          Die x-Koordinate der Position des Clusters in der kugelmatik
+     * @param y          Die y-Koordinate der Position der Clusters in der kugelmatik
      */
     public Cluster(@NotNull Kugelmatik kugelmatik, InetAddress address, int x, int y) {
         if (x < 0)
@@ -59,7 +57,7 @@ public class Cluster {
         packetsToAcknowledge = new HashMap<>();
         packetsSentTimes = new HashMap<>();
 
-        Kugelmatik = kugelmatik;
+        this.kugelmatik = kugelmatik;
         this.x = x;
         this.y = y;
 
@@ -67,11 +65,9 @@ public class Cluster {
 
         // die Reihenfolge der beiden for-Schleifen darf sich nicht ändern
         // da die Firmware genau diese Reihenfolge der Stepper erwartet
-        for (byte sX = 0; sX < Width; sX++) {
-            for (byte sY = 0; sY < Height; sY++) {
+        for (byte sX = 0; sX < Width; sX++)
+            for (byte sY = 0; sY < Height; sY++)
                 steppers[sY * Width + sX] = new Stepper(this, sX, sY);
-            }
-        }
 
         if (address != null) {
             try {
@@ -80,8 +76,8 @@ public class Cluster {
                 incomeListener = new DatagramIncomeListener(this, socket, "listen_" + x + "_" + y);
                 incomeListener.listen();
             } catch (IOException e) {
-                Kugelmatik.getLog().Err(String.format("Error while creating socket for cluster [x: %d y: %d] with ip %s", x, y, address.getHostAddress()));
-                Kugelmatik.getLog().Err(e);
+                this.kugelmatik.getLog().error("Error while creating socket for cluster [%s] with ip %s", getID(), address.getHostAddress());
+                e.printStackTrace();
             }
 
             sendPing();
@@ -92,16 +88,20 @@ public class Cluster {
      * Wird aufgerufen, wenn eine Verbindung hergestellt wurde.
      */
     private void onConnected() {
+        kugelmatik.getLog().debug("Cluster [%s, address = %s] onConnected()", getID(), socket.getInetAddress().toString());
         resetRevision();
         sendGetData();
         sendGetClusterConfig();
     }
 
     /**
-     * Wird aufgerufen, wenn bei einem der Schrittmotoren eine Höhenänderung auftritt
+     * Gibt einen Wert zurück, der angibt, ob sich ein Stepper geändert hat.
      */
-    public void ChildHasChanged() {
-        dataChanged = true;
+    public boolean hasStepperChanged() {
+        for (Stepper stepper : steppers)
+            if (stepper.hasDataChanged())
+                return true;
+        return false;
     }
 
     /**
@@ -111,12 +111,10 @@ public class Cluster {
      */
     public boolean resendPackets() {
         boolean anyPacketsSend = false;
-        Iterator<Map.Entry<Integer, Packet>> iterator = packetsToAcknowledge.entrySet().iterator();
-        for (Map.Entry<Integer, Packet> entry : packetsToAcknowledge.entrySet()) {
-            if (System.currentTimeMillis() - packetsSentTimes.get(entry.getKey()) >= Config.MinimumResendTimeout) {
+
+        for (Map.Entry<Integer, Packet> entry : packetsToAcknowledge.entrySet())
+            if (System.currentTimeMillis() - packetsSentTimes.get(entry.getKey()) >= Config.MinimumResendTimeout)
                 anyPacketsSend |= sendPacketInternal(entry.getValue(), true, entry.getKey());
-            }
-        }
         return anyPacketsSend;
     }
 
@@ -173,12 +171,12 @@ public class Cluster {
 
         DatagramPacket datagramPacket = packet.getPacket(guaranteed, currentRevision);
         try {
-            Kugelmatik.getLog().Verbose(String.format(getID() + ": Sent %s with rev %d", packet.getClass().getSimpleName(), revision));
+            kugelmatik.getLog().verbose("%s: Sent %s with rev %d", getID(), packet.getClass().getSimpleName(), revision);
             socket.send(datagramPacket);
 
             return true;
         } catch (IOException e) {
-            Kugelmatik.getLog().Err(e);
+            e.printStackTrace();
             return false;
         }
     }
@@ -189,7 +187,7 @@ public class Cluster {
      * @param height Die Höhe zu der sich die Kugeln bewegen sollen
      */
     public void moveAllSteppers(short height) {
-        if (height > Config.MaxHeight)
+        if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
 
         for (Stepper stepper : steppers)
@@ -231,7 +229,7 @@ public class Cluster {
      * @return Gibt zurück ob Packets gesendet wurden
      */
     protected boolean sendMovementDataInternal(boolean guaranteed, boolean sendAllSteppers) {
-        if (!dataChanged)
+        if (!hasStepperChanged() && !sendAllSteppers)
             return false;
 
         Stepper[] changedSteppers;
@@ -447,10 +445,10 @@ public class Cluster {
                     break;
 
             }
-            Kugelmatik.getLog().Verbose(getID() + ": " + verbose);
+            kugelmatik.getLog().verbose(getID() + ": " + verbose);
 
         } catch (IOException e) {
-            Kugelmatik.getLog().Err(e);
+            e.printStackTrace();
         }
     }
 
@@ -557,6 +555,6 @@ public class Cluster {
      * Gibt eine ID anhand der Position zurück
      */
     public String getID() {
-        return (x + 1) + "" + (y + 1);
+        return String.format("cluster_%d_%d", x + 1, y + 1);
     }
 }

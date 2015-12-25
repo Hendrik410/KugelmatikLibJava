@@ -70,7 +70,6 @@ public class Stepper {
         setHeight(height);
         this.waitTime = waitTime;
         dataChanged = true;
-        cluster.ChildHasChanged();
     }
 
     /**
