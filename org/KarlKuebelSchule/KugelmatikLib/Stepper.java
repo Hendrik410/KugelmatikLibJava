@@ -1,6 +1,7 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
 import com.sun.istack.internal.NotNull;
+import com.sun.xml.internal.ws.handler.HandlerException;
 
 /**
  * Created by Hendrik on 29.08.2015.
@@ -15,9 +16,11 @@ public class Stepper {
 
     private Cluster cluster;
 
+    private short lastHeight = 0;
     private short height = 0;
+
+    private byte lastWaitTime = 0;
     private byte waitTime = 0;
-    private boolean dataChanged = false;
 
     private IHeightChangedHandler heightChangedHandler;
 
@@ -40,7 +43,6 @@ public class Stepper {
      */
     public void reset() {
         setHeight(0);
-        dataChanged = false;
     }
 
     /**
@@ -64,12 +66,8 @@ public class Stepper {
         if (waitTime < 0)
             throw new IllegalArgumentException("waitTime is out of range");
 
-        if (this.height == height && this.waitTime == waitTime)
-            return;
-
         setHeight(height);
         this.waitTime = waitTime;
-        dataChanged = true;
     }
 
     /**
@@ -115,14 +113,15 @@ public class Stepper {
      * Gibt zurück ob sich die Höhe der Kugel seit dem letzten Senden verändert hat.
      */
     public boolean hasDataChanged() {
-        return dataChanged;
+        return lastHeight != height || lastWaitTime != waitTime;
     }
 
     /**
-     * Legt fest, dass die Änderungen an das Cluster gesendet wurden.
+     * Wird aufgerufen, wenn das Cluster Daten gesendet hat.
      */
-    public void updated() {
-        dataChanged = false;
+    public void internalOnDataSent() {
+        lastHeight = height;
+        lastWaitTime = waitTime;
     }
 
     /**

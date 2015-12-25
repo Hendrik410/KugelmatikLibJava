@@ -218,10 +218,10 @@ public class Cluster {
      */
     public boolean sendMovementData(boolean guaranteed, boolean sendAllSteppers) {
         boolean sentSomething = sendMovementDataInternal(guaranteed, sendAllSteppers);
-        if (sentSomething) {
+        if (sentSomething)
             for (Stepper stepper : steppers)
-                stepper.updated();
-        }
+                stepper.internalOnDataSent();
+
         return sentSomething;
     }
 
