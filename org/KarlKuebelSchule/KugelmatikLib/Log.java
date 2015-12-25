@@ -1,18 +1,18 @@
 package org.KarlKuebelSchule.KugelmatikLib;
 
-import com.sun.glass.ui.SystemClipboard;
 import com.sun.istack.internal.NotNull;
 
 import java.io.PrintStream;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Hendrik on 03.09.2015.
  * Ermöglicht das Erstellen von Logs
  */
 public class Log {
+    private static final DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss.SSS");
     private PrintStream out = null;
     private PrintStream err = null;
     private LogLevel logLevel;
@@ -82,7 +82,12 @@ public class Log {
     }
 
     public synchronized void write(LogLevel level, String message) {
-        String output = String.format("(%s) [%s] \"%s\"", LocalDateTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)), level.name(), message);
+        int padding = 7 - level.name().length();
+        String levelPadding = "";
+        for (int i = 0; i < padding; i++)
+            levelPadding += " ";
+
+        String output = String.format("(%s) [%s]%s %s", timeFormat.format(new Date()), level.name(), levelPadding, message);
 
         if (level.compareTo(logLevel) >= 0) {
             if (level == LogLevel.Error && err != null) {
