@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Hendrik on 31.08.2015.
- * Befehl um die aktuelle Aktion des Clusters zu stoppen
+ * Befehl um den aktuellen Busy-Befehl des Clusters zu stoppen oder, wenn kein Busy-Befehl läuft, die Bewegung der Kugeln zu stoppen.
  */
 public class Stop extends Packet {
     @Override

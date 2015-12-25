@@ -19,7 +19,7 @@ public enum ErrorCode {
 
     private byte value;
 
-    private ErrorCode(byte value) {
+    ErrorCode(byte value) {
         this.value = value;
     }
 

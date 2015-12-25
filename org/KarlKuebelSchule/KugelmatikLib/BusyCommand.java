@@ -12,7 +12,7 @@ public enum BusyCommand {
 
     private byte value;
 
-    private BusyCommand(byte value) {
+    BusyCommand(byte value) {
         this.value = value;
     }
 

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Hendrik on 31.08.2015.
- * Befehl um die Rote LED am Cluster blinken zu lassen
+ * Befehl um die rote LED am Cluster blinken zu lassen
  */
 public class BlinkRed extends Packet {
     @Override

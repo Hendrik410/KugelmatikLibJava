@@ -7,16 +7,15 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Hendrik on 30.08.2015.
- * Der Home Befehl für einen Stepper
+ * Der Home Befehl fï¿½r einen Stepper
  */
 public class HomeStepper extends Packet {
+    private byte x, y;
 
-    private byte x,y;
-
-    public HomeStepper(byte x, byte y){
-        if(x >= Cluster.Width)
+    public HomeStepper(byte x, byte y) {
+        if (x < 0 || x >= Cluster.Width)
             throw new IllegalArgumentException("x is out of range");
-        if(y >= Cluster.Height)
+        if (y < 0 || y >= Cluster.Height)
             throw new IllegalArgumentException("y is out of range");
 
         this.x = x;
@@ -35,7 +34,7 @@ public class HomeStepper extends Packet {
 
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
-        buffer.putInt(BinaryHelper.FlipByteOrder(0xABCD));
-        buffer.put((byte)((x << 4) | y));
+        buffer.putInt(BinaryHelper.flipByteOrder(0xABCD));
+        buffer.put((byte) ((x << 4) | y));
     }
 }

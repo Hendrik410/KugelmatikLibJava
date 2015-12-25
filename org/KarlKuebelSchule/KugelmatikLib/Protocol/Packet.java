@@ -8,45 +8,50 @@ import java.nio.ByteOrder;
 
 /**
  * Created by Hendrik on 30.08.2015.
- * Eine abstrakte Klasse für Packete die an die Kugelmatik übermittelt werden
+ * Eine abstrakte Klasse fÃ¼r Packete die an die Kugelmatik Ã¼bermittelt werden
  */
 public abstract class Packet {
+    /**
+     * Gibt die GrÃ¶ÃŸe des Paket-Headers in Bytes an.
+     */
     public static final int HeadSize = 9;
 
     /**
-     * Gibt den Typ des Packetes zurück
+     * Gibt den Typ des Packets zurÃ¼ck.
      * @return Der Typ des Packets
      */
     public abstract PacketType getType();
 
     /**
-     * Gibt die Größe der Daten des Packets in bytes zurück
-     * @return Die Größe der Daten des Packets
+     * Gibt die GrÃ¶ÃŸe der Daten des Packets in Bytes zurÃ¼ck.
+     * @return Die GrÃ¶ÃŸe der Daten des Packets in Bytes.
      */
     public abstract int getDataSize();
 
     /**
-     * Erstellt ein Packet mit allen Informationen für den Befehl
-     * @param guaranteed Soll das Packet garantiert ankommen
-     * @param revision Die Revision das Paketes
-     * @return Das DatagramPacket das via eines DatagramSockets an das Cluster übermittelt wird
+     * Erstellt ein Packet mit allen Informationen fÃ¼r den Befehl.
+     * @param guaranteed Gibt an, ob das Packet garantiert ankommen soll.
+     * @param revision Gibt die Revision des Pakcets an.
+     * @return Das DatagramPacket das via eines DatagramSockets an das Cluster Ã¼bermittelt wird
      */
     public DatagramPacket getPacket(boolean guaranteed, int revision){
         ByteBuffer buffer = ByteBuffer.allocate(HeadSize + getDataSize());
         //buffer.order(ByteOrder.BIG_ENDIAN);
+
         buffer.put((byte)'K');
         buffer.put((byte)'K');
         buffer.put((byte)'S');
         buffer.put(guaranteed ? (byte)1 : (byte)0);
         buffer.put(getType().getByteValue());
-        buffer.putInt(BinaryHelper.FlipByteOrder(revision));
+        buffer.putInt(BinaryHelper.flipByteOrder(revision));
+
         allocateBuffer(buffer);
         return new DatagramPacket(buffer.array(), HeadSize + getDataSize());
     }
 
     /**
-     * Wird von den Erben überschrieben und schreibt die Daten in den buffer
-     * @param buffer Der buffer in den die Daten geschrieben werden
+     * Schreibt die Daten des Packets in einen ByteBuffer.
+     * @param buffer Der ByteBuffer in dem die Daten geschrieben werden sollen.
      */
     protected abstract void allocateBuffer(ByteBuffer buffer);
 }

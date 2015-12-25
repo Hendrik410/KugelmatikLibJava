@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Created by Hendrik on 29.08.2015.
- * Repr�sentiert ein Cluster der Kugelmatik
+ * Repräsentiert ein Cluster der Kugelmatik
  */
 public class Cluster {
     public static final byte Width = 5;
@@ -38,15 +38,16 @@ public class Cluster {
     private int ping = -1;
     private boolean dataChanged;
 
-    private Map<Integer,Packet> packetsToAcknowledge;
+    private Map<Integer, Packet> packetsToAcknowledge;
     private Map<Integer, Long> packetsSentTimes;
 
     /**
-     * Gibt eine neue Instanz eines Clusters zur�ck
+     * Gibt eine neue Instanz eines Clusters zurück
+     *
      * @param kugelmatik Die Kugelmatik zu der
-     * @param address Die InetAdresse des Clusters
-     * @param x Die x-Koordinate der Position des Clusters in der Kugelmatik
-     * @param y Die y-Koordinate der Position der Clusters in der Kugelmatik
+     * @param address    Die InetAdresse des Clusters
+     * @param x          Die x-Koordinate der Position des Clusters in der Kugelmatik
+     * @param y          Die y-Koordinate der Position der Clusters in der Kugelmatik
      */
     public Cluster(@NotNull Kugelmatik kugelmatik, InetAddress address, int x, int y) {
         if (x < 0)
@@ -76,14 +77,14 @@ public class Cluster {
             try {
                 socket = new DatagramSocket();
                 socket.connect(address, Config.ProtocolPort);
-                incomeListener = new DatagramIncomeListener(this, socket, "listen" + x + "_" + y);
-                incomeListener.Listen();
+                incomeListener = new DatagramIncomeListener(this, socket, "listen_" + x + "_" + y);
+                incomeListener.listen();
             } catch (IOException e) {
-                Kugelmatik.Log().Err(String.format("Error while creating socket for cluster [x: %d y: %d] with ip %s", x, y, address.getHostAddress()));
-                Kugelmatik.Log().Err(e);
+                Kugelmatik.getLog().Err(String.format("Error while creating socket for cluster [x: %d y: %d] with ip %s", x, y, address.getHostAddress()));
+                Kugelmatik.getLog().Err(e);
             }
 
-            SendPing();
+            sendPing();
         }
     }
 
@@ -91,28 +92,29 @@ public class Cluster {
      * Wird aufgerufen, wenn eine Verbindung hergestellt wurde.
      */
     private void onConnected() {
-        ResetRevision();
-        SendGetData();
-        SendGetClusterConfig();
+        resetRevision();
+        sendGetData();
+        sendGetClusterConfig();
     }
 
     /**
      * Wird aufgerufen, wenn bei einem der Schrittmotoren eine Höhenänderung auftritt
      */
-    public void ChildHasChanged(){
+    public void ChildHasChanged() {
         dataChanged = true;
     }
 
     /**
      * Sendet alle noch austehende Packets deren Sendezeit mehr als MinimumResendTimeout zurück liegt
+     *
      * @return True wenn Packets gesendet wurden
      */
-    public boolean ResendPackets(){
+    public boolean resendPackets() {
         boolean anyPacketsSend = false;
         Iterator<Map.Entry<Integer, Packet>> iterator = packetsToAcknowledge.entrySet().iterator();
-        for(Map.Entry<Integer, Packet> entry : packetsToAcknowledge.entrySet()){
-            if(System.currentTimeMillis() - packetsSentTimes.get(entry.getKey()) >= Config.MinimumResendTimeout){
-                anyPacketsSend |= SendPacketInternal(entry.getValue(), true, entry.getKey());
+        for (Map.Entry<Integer, Packet> entry : packetsToAcknowledge.entrySet()) {
+            if (System.currentTimeMillis() - packetsSentTimes.get(entry.getKey()) >= Config.MinimumResendTimeout) {
+                anyPacketsSend |= sendPacketInternal(entry.getValue(), true, entry.getKey());
             }
         }
         return anyPacketsSend;
@@ -120,30 +122,33 @@ public class Cluster {
 
     /**
      * Sende ein Packet an das Cluster (ohne Garantie).
+     *
      * @param packet Das Packet das gesendet werden soll
      */
-    public boolean SendPacket(Packet packet){
-        return SendPacket(packet, false);
+    public boolean sendPacket(Packet packet) {
+        return sendPacket(packet, false);
     }
 
     /**
      * Sende ein Packet an das Cluster, wahlweise mit Garantie.
-     * @param packet Das Packet das gesendet werden soll
+     *
+     * @param packet     Das Packet das gesendet werden soll
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob ein Packet gesendet wurde
      */
-    public boolean SendPacket(@NotNull Packet packet, boolean guaranteed){
-        return SendPacketInternal(packet, guaranteed, currentRevision++);
+    public boolean sendPacket(@NotNull Packet packet, boolean guaranteed) {
+        return sendPacketInternal(packet, guaranteed, currentRevision++);
     }
 
     /**
      * Interne Methode zum senden eines Packets
-     * @param packet Das Packet das gesendet werden soll
+     *
+     * @param packet     Das Packet das gesendet werden soll
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
-     * @param revision Die Revision mit der das Packet gesendet werden soll
+     * @param revision   Die Revision mit der das Packet gesendet werden soll
      * @return Gibt zurück ob ein Packet gesendet wurde
      */
-    protected boolean SendPacketInternal(@NotNull Packet packet, boolean guaranteed, int revision){
+    protected boolean sendPacketInternal(@NotNull Packet packet, boolean guaranteed, int revision) {
         // bei keiner Verbindung Paket ignorieren
         if (socket == null)
             return false;
@@ -158,70 +163,74 @@ public class Cluster {
         }
 
 
-        if(packet.getType().DoesClusterAnswer())
+        if (packet.getType().doesClusterAnswer())
             guaranteed = false;
 
-        if(guaranteed){
+        if (guaranteed) {
             packetsToAcknowledge.put(currentRevision, packet);
             packetsSentTimes.put(currentRevision, System.currentTimeMillis());
         }
 
         DatagramPacket datagramPacket = packet.getPacket(guaranteed, currentRevision);
         try {
-            Kugelmatik.Log().Verbose(String.format(getID() + ": Sent %s with rev %d", packet.getClass().getSimpleName(), revision));
+            Kugelmatik.getLog().Verbose(String.format(getID() + ": Sent %s with rev %d", packet.getClass().getSimpleName(), revision));
             socket.send(datagramPacket);
 
             return true;
         } catch (IOException e) {
-            Kugelmatik.Log().Err(e);
+            Kugelmatik.getLog().Err(e);
             return false;
         }
     }
 
     /**
-     * Bewegt alle Kugeln auf eine H�he.
-     * @param height Die H�he zu der sich die Kugeln bewegen sollen
+     * Bewegt alle Kugeln auf eine Höhe.
+     *
+     * @param height Die Höhe zu der sich die Kugeln bewegen sollen
      */
-    public void MoveAllSteppers(short height){
-        if(height > Config.MaxHeight)
+    public void moveAllSteppers(short height) {
+        if (height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
 
-        for(Stepper stepper : steppers)
-            stepper.MoveTo(height);
+        for (Stepper stepper : steppers)
+            stepper.moveTo(height);
     }
 
     /**
      * Sendet die Höhenänderungen an das Cluster ohne Garantie
+     *
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    public boolean SendMovementData(){
-       return SendMovementData(false);
+    public boolean sendMovementData() {
+        return sendMovementData(false);
     }
 
-    public boolean SendMovementData(boolean guaranteed){
-        return SendMovementData(guaranteed, false);
+    public boolean sendMovementData(boolean guaranteed) {
+        return sendMovementData(guaranteed, false);
     }
 
     /**
      * Sendet die Höhenänderungen an das Cluster
+     *
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    public boolean SendMovementData(boolean guaranteed, boolean sendAllSteppers){
-        boolean sentSomething = SendMovementDataInternal(guaranteed, sendAllSteppers);
-        if(sentSomething){
-            for(Stepper stepper : steppers)
-                stepper.Updated();
+    public boolean sendMovementData(boolean guaranteed, boolean sendAllSteppers) {
+        boolean sentSomething = sendMovementDataInternal(guaranteed, sendAllSteppers);
+        if (sentSomething) {
+            for (Stepper stepper : steppers)
+                stepper.updated();
         }
         return sentSomething;
     }
 
     /**
      * Interne Methode zum Senden der Höhenänderungen an das Cluster
+     *
      * @param guaranteed Bei true mit Garantie, bei false ohne Garantie
      * @return Gibt zurück ob Packets gesendet wurden
      */
-    protected boolean SendMovementDataInternal(boolean guaranteed, boolean sendAllSteppers) {
+    protected boolean sendMovementDataInternal(boolean guaranteed, boolean sendAllSteppers) {
         if (!dataChanged)
             return false;
 
@@ -237,13 +246,13 @@ public class Cluster {
 
         if (changedSteppers.length == 1) {
             Stepper stepper = changedSteppers[0];
-            return SendPacket(new MoveStepper(stepper.getX(), stepper.getY(), stepper.getHeight(), stepper.getWaitTime()), guaranteed);
+            return sendPacket(new MoveStepper(stepper.getX(), stepper.getY(), stepper.getHeight(), stepper.getWaitTime()), guaranteed);
         }
 
         boolean allSteppersSameValues = StepperUtil.AllSteppersSameValues(steppers);
 
         if (allSteppersSameValues)
-            return SendPacket(new MoveAllSteppers(steppers[0].getHeight(), steppers[0].getWaitTime()), guaranteed);
+            return sendPacket(new MoveAllSteppers(steppers[0].getHeight(), steppers[0].getWaitTime()), guaranteed);
 
         // TODO detect rectangles
 
@@ -253,113 +262,107 @@ public class Cluster {
             boolean allChangedSameValues = StepperUtil.AllSteppersSameValues(changedSteppers);
 
             if (allChangedSameValues)
-                return SendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
+                return sendPacket(new MoveSteppers(changedSteppers, changedSteppers[0].getHeight(), changedSteppers[0].getWaitTime()), guaranteed);
             else
-                return SendPacket(new MoveSteppersArray(changedSteppers), guaranteed);
+                return sendPacket(new MoveSteppersArray(changedSteppers), guaranteed);
         }
 
-        return SendPacket(new MoveAllSteppersArray(steppers), guaranteed);
+        return sendPacket(new MoveAllSteppersArray(steppers), guaranteed);
     }
 
     /**
-     * Setzt die Revisionsz�hlung des Clusters zur�ck.
+     * Setzt die Revisionszählung des Clusters zurück.
      */
-    public void ResetRevision(){
-        SendPacket(new ResetRevision());
+    public void resetRevision() {
+        sendPacket(new ResetRevision());
         currentRevision = 0;
     }
 
     /**
-     * Lässt die Grüne LED blinken
+     * Lässt die grüne LED blinken.
      */
-    public void BlinkGreen(){
-        SendPacket(new BlinkGreen());
+    public void blinkGreen() {
+        sendPacket(new BlinkGreen());
     }
 
     /**
-     * Lässt die Rote LED blinken
+     * Lässt die rote LED blinken.
      */
-    public void BlinkRed(){
-        SendPacket(new BlinkRed());
+    public void blinkRed() {
+        sendPacket(new BlinkRed());
     }
 
     /**
      * Sendet ein Ping-Packet an das Cluster. Die Rundlaufzeit kann mit getPing() abgerufen werden.
      */
-    public void SendPing(){
+    public void sendPing() {
         if (lastSuccessfulPingTime < 0 || System.currentTimeMillis() - lastSuccessfulPingTime > 5000)
             setPing(-1);
 
-        SendPacket(new Ping(System.currentTimeMillis()));
+        sendPacket(new Ping(System.currentTimeMillis()));
     }
 
     /**
      * Sendet eine Stop-Befehl an das Cluster
      */
-    public void SendStop(){
-        SendPacket(new Stop(), true);
+    public void sendStop() {
+        sendPacket(new Stop(), true);
     }
 
     /**
      * Setze alle Kugeln des Clusters auf Home
      */
-    public void SendHome(){
-        SendPacket(new Home(), true);
+    public void sendHome() {
+        sendPacket(new Home(), true);
 
-        for (Stepper stepper : steppers) {
-            stepper.setHeight(((short)0));
-        }
+        for (Stepper stepper : steppers)
+            stepper.setHeight(((short) 0));
     }
 
     /**
      * Setzte eine Kugel des Klusters auf Home.
+     *
      * @param x Die x-Koordinate der Kugel
      * @param y Die y-Koordinate der Kugel
      */
-    public void SendHome(byte x, byte y){
-        if(x >= Width)
-            throw new IllegalArgumentException("x is out of range");
-        if(y >= Height)
-            throw new IllegalArgumentException("y is out of range");
-
-        SendPacket(new HomeStepper(x, y), true);
-        steppers[y * Width + x].Reset();
+    public void sendHome(byte x, byte y) {
+        Stepper stepper = getStepperByPosition(x, y);
+        stepper.reset();
+        sendPacket(new HomeStepper(x, y), true);
     }
 
     /**
      * Wickelt eine Kugel ab und wieder auf.
+     *
      * @param x Die x-Koordinate der Kugel
      * @param y Die y-Koordinate der Kugel
      */
-    public boolean SendFix(byte x, byte y){
-        if(x >= Width)
-            throw new IllegalArgumentException("x is out of range");
-        if(y >= Height)
-            throw new IllegalArgumentException("y is out of range");
-
-        steppers[y * Width + x].Reset();
-        return SendPacket(new Fix(x, y), true);
+    public boolean sendFix(byte x, byte y) {
+        Stepper stepper = getStepperByPosition(x, y);
+        stepper.reset();
+        return sendPacket(new Fix(x, y), true);
     }
 
     /**
      * Ruft den Status der Stepper vom Cluster ab
      */
-    public void SendGetData(){
-        SendPacket(new GetData());
+    public void sendGetData() {
+        sendPacket(new GetData());
     }
 
     /**
      * Ruft die Konfiguration des Clusters ab
      */
-    public void SendGetClusterConfig() {
-        SendPacket(new GetClusterConfig());
+    public void sendGetClusterConfig() {
+        sendPacket(new GetClusterInfo());
     }
 
     /**
      * Wird vom DatagramIncomeListener aufgerufen wenn ein neues Packet angekommen ist
+     *
      * @param packet Das angekommene Packet das verarbeitet werden soll
      */
-    public void OnReceive(DatagramPacket packet) {
+    public void onReceive(DatagramPacket packet) {
         if (packet.getLength() == 0)
             return;
 
@@ -373,7 +376,9 @@ public class Cluster {
             input.skip(4);
 
             PacketType type = PacketType.values()[input.read() - 1];
-            int revision = BinaryHelper.FlipByteOrder(input.readInt());
+            int revision = BinaryHelper.flipByteOrder(input.readInt());
+            acknowledge(revision);
+
             String verbose = "Got packet | Length: " + data.length + " | Revision: " + revision + " | ";
             switch (type) {
                 case Ping:
@@ -388,11 +393,9 @@ public class Cluster {
 
                     long sendTime = input.readLong();
                     setPing((int) (System.currentTimeMillis() - sendTime));
-                    Acknowledge(revision);
                     break;
                 case Ack:
                     verbose += "Ack";
-                    Acknowledge(revision);
                     break;
                 case Info:
                     verbose += "Config";
@@ -406,11 +409,11 @@ public class Cluster {
 
                     int highestRevision = 0;
                     if (buildVersion >= 9)
-                        highestRevision = BinaryHelper.FlipByteOrder(input.readInt());
+                        highestRevision = BinaryHelper.flipByteOrder(input.readInt());
 
                     byte stepMode = (byte) input.read();
 
-                    int delayTime = BinaryHelper.FlipByteOrder(input.readInt());
+                    int delayTime = BinaryHelper.flipByteOrder(input.readInt());
 
                     boolean useBreak = false;
                     if (buildVersion >= 6)
@@ -425,7 +428,6 @@ public class Cluster {
                         freeRam = input.readInt();
 
                     clusterInfo = new ClusterInfo(buildVersion, currentBusyCommand, highestRevision, new ClusterConfig(StepMode.values()[stepMode - 1], delayTime, useBreak), lastErrorCode, freeRam);
-                    Acknowledge(revision);
                     break;
                 case GetData:
                     verbose += "StepperData";
@@ -434,7 +436,7 @@ public class Cluster {
                             Stepper stepper = getStepperByPosition(x, y);
 
 
-                            short height = BinaryHelper.FlipByteOrder(input.readShort());
+                            short height = BinaryHelper.flipByteOrder(input.readShort());
                             if (height > Config.MaxHeight)
                                 continue; // Höhe ignorieren
 
@@ -442,32 +444,33 @@ public class Cluster {
                             stepper.setHeight(height);
                             stepper.setWaitTime(waitTime);
                         }
-                    Acknowledge(revision);
                     break;
 
             }
-            Kugelmatik.Log().Verbose(getID() + ": " + verbose);
+            Kugelmatik.getLog().Verbose(getID() + ": " + verbose);
 
         } catch (IOException e) {
-            Kugelmatik.Log().Err(e);
+            Kugelmatik.getLog().Err(e);
         }
     }
 
-    private void Acknowledge(int rev){
+    private void acknowledge(int rev) {
         packetsToAcknowledge.remove(rev);
         packetsSentTimes.remove(rev);
     }
 
     /**
      * Setzt den PingChangedEventHandler
+     *
      * @param eventHandler Der PingChangedEventHandler
      */
-    public void setPingChangedEventHandler(IPingChangedEventHandler eventHandler){
+    public void setPingChangedEventHandler(IPingChangedEventHandler eventHandler) {
         pingChangedEventHandler = eventHandler;
     }
 
     /**
-     * Setzt den Ping-Wert und ruft bei �nderungen das entsprechende Event auf.
+     * Setzt den Ping-Wert und ruft bei Änderungen das entsprechende Event auf.
+     *
      * @param ping Der neue Ping-Wert
      */
     private void setPing(int ping) {
@@ -475,14 +478,14 @@ public class Cluster {
             this.ping = ping;
 
             if (pingChangedEventHandler != null)
-                pingChangedEventHandler.OnPingChanged(this);
+                pingChangedEventHandler.onPingChanged(this);
         }
     }
 
     /**
-     * Ruft die Rundlaufzeit f�r das Cluster ab.
+     * Ruft die Rundlaufzeit für das Cluster ab.
      */
-    public int getPing(){
+    public int getPing() {
         return ping;
     }
 
@@ -496,37 +499,41 @@ public class Cluster {
     /**
      * Ruft ab ob es nicht beantwortete Pakete gibt
      */
-    public boolean AnyPacketsPending(){
+    public boolean isAnyPacketPending() {
         return packetsToAcknowledge.size() != 0;
     }
 
     /**
      * Ruft die Anzahl der nicht beantworteten Pakete ab
      */
-    public int PendingPacketsCount(){
+    public int getPendingPacketsCount() {
         return packetsToAcknowledge.size();
     }
 
     /**
      * Gibt den Stepper an der entsprechenden Postion zurück
+     *
      * @param x Die x-Koordinate des Steppers
      * @param y Die y-Koordinate des Steppers
      * @return Der Stepper an der Postion
      */
-    public Stepper getStepperByPosition(byte x, byte y){
-        if(y * Width + x > steppers.length)
-            throw new InvalidParameterException("x | y is out of range");
+    public Stepper getStepperByPosition(byte x, byte y) {
+        if (x < 0 || x >= Width)
+            throw new IllegalArgumentException("x is out of range");
+        if (y < 0 || y >= Height)
+            throw new IllegalArgumentException("y is out of range");
 
         return steppers[y * Width + x];
     }
 
     /**
      * Gibt einen Stepper anhand seines Indexes zurück
+     *
      * @param index Der Index des Steppers
      * @return Der Stepper an der Stelle index
      */
-    public Stepper getStepperByIndex(int index){
-        if(index >= steppers.length)
+    public Stepper getStepperByIndex(int index) {
+        if (index >= steppers.length)
             throw new InvalidParameterException("index is out of range");
 
         return steppers[index];
@@ -549,7 +556,7 @@ public class Cluster {
     /**
      * Gibt eine ID anhand der Position zurück
      */
-    public String getID(){
-        return (x+1) + "" + (y+1);
+    public String getID() {
+        return (x + 1) + "" + (y + 1);
     }
 }

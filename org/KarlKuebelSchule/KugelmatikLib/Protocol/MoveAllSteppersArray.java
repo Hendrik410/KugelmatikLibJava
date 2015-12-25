@@ -10,7 +10,7 @@ import java.security.InvalidParameterException;
 
 /**
  * Created by Henrik Kunzelmann on 20.12.2015.
- * Befehl zum Bewegen aller Kugeln mit unterschiedlicher Hoehe und Wartezeit.
+ * Befehl zum Bewegen aller Stepper mit unterschiedlicher Hoehe und Waittime.
  */
 public class MoveAllSteppersArray extends Packet {
     private short[] heights;

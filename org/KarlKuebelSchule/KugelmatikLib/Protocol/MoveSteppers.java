@@ -11,29 +11,40 @@ import java.security.InvalidParameterException;
  * Befehl um mehrere Kugeln auf eine Hoehe zu bringen
  */
 public class MoveSteppers extends Packet {
-
     private Item[] items;
     private short height;
     private byte waitTime;
 
-    public MoveSteppers(Item[] items, short height, byte waitTime){
-        if(height > Config.MaxHeight)
-            throw new InvalidParameterException("height is out of range");
+    public MoveSteppers(Item[] items, short height, byte waitTime) {
+        if (items == null)
+            throw new IllegalArgumentException("items is null");
+        if (items.length == 0)
+            throw new IllegalArgumentException("items is empty");
+        if (height < 0 || height > Config.MaxHeight)
+            throw new IllegalArgumentException("height is out of range");
+        if (waitTime < 0)
+            throw new IllegalArgumentException("waitTime is out of range");
 
         this.items = items;
         this.height = height;
         this.waitTime = waitTime;
     }
 
-    public MoveSteppers(Stepper[] steppers, short height, byte waitTime){
-        if(height > Config.MaxHeight)
-            throw new InvalidParameterException("height is out of range");
+    public MoveSteppers(Stepper[] steppers, short height, byte waitTime) {
+        if (steppers == null)
+            throw new IllegalArgumentException("steppers is null");
+        if (steppers.length == 0)
+            throw new IllegalArgumentException("steppers is empty");
+        if (height < 0 || height > Config.MaxHeight)
+            throw new IllegalArgumentException("height is out of range");
+        if (waitTime < 0)
+            throw new IllegalArgumentException("waitTime is out of range");
 
         this.height = height;
         this.waitTime = waitTime;
 
         this.items = new Item[steppers.length];
-        for(int i = 0; i < steppers.length; i++) {
+        for (int i = 0; i < steppers.length; i++) {
             this.items[i] = new Item(steppers[i]);
         }
     }
@@ -50,22 +61,23 @@ public class MoveSteppers extends Packet {
 
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
-        buffer.put((byte)items.length);
+        buffer.put((byte) items.length);
         buffer.putShort(height);
         buffer.put(waitTime);
-        for(int i = 0; i < items.length; i++) {
-            buffer.put((byte)((items[i].getX() << 4) | items[i].getY()));
+        for (int i = 0; i < items.length; i++) {
+            buffer.put((byte) ((items[i].getX() << 4) | items[i].getY()));
         }
     }
 
-    public class Item{
+    public class Item {
         private byte x, y;
 
-        public Item(byte x, byte y){
+        public Item(byte x, byte y) {
             this.x = x;
             this.y = y;
         }
-        public Item(Stepper stepper){
+
+        public Item(Stepper stepper) {
             this.x = stepper.getX();
             this.y = stepper.getY();
         }

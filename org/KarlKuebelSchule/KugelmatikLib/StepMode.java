@@ -16,7 +16,7 @@ public enum StepMode {
     }
 
     /**
-     * Gibt den byte-Wert des Eintrags zurück.
+     * Gibt den byte-Wert des Eintrags zurÃ¼ck.
      * @return Der byte-Wert des Eintrags
      */
     public byte getByteValue(){

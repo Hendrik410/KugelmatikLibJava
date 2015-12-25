@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Hendrik on 30.08.2015.
- * Befehl zum Bewegen eines Steppers
+ * Befehl zum Bewegen einer einzelnen Steppers auf einem Cluster.
  */
 public class MoveStepper extends Packet {
 
@@ -15,12 +15,12 @@ public class MoveStepper extends Packet {
     private short height;
     private byte waitTime;
 
-    public MoveStepper(byte x, byte y, short height, byte waitTime){
-        if(x >= Cluster.Width)
+    public MoveStepper(byte x, byte y, short height, byte waitTime) {
+        if (x < 0 || x >= Cluster.Width)
             throw new IllegalArgumentException("x is out of range");
-        if(y >= Cluster.Height)
+        if (y < 0 || y >= Cluster.Height)
             throw new IllegalArgumentException("y is out of range");
-        if(height > Config.MaxHeight || height < 0)
+        if (height < 0 || height > Config.MaxHeight)
             throw new IllegalArgumentException("height is out of range");
 
         this.x = x;
@@ -41,7 +41,7 @@ public class MoveStepper extends Packet {
 
     @Override
     protected void allocateBuffer(ByteBuffer buffer) {
-        buffer.put((byte)((x << 4) | y));
+        buffer.put((byte) ((x << 4) | y));
         buffer.putShort(height);
         buffer.put(waitTime);
     }

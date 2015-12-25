@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
  * Befehl um die Konfiguration an ein Cluster zu senden
  */
 public class SendClusterConfig extends Packet {
-
     private ClusterConfig config;
 
     public SendClusterConfig(@NotNull ClusterConfig config){

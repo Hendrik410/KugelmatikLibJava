@@ -4,15 +4,14 @@ import java.net.InetAddress;
 
 /**
  * Created by Hendrik on 29.08.2015.
- * Stellt eine Schnittstelle für die Rückgabe der IP-Adressen der Cluster dar
+ * Stellt eine Schnittstelle fÃ¼r die RÃ¼ckgabe der IP-Adressen der Cluster dar
  */
 public interface IAddressProvider {
-
     /**
-     * Gibt die InetAddress eines Clusters zurück
+     * Gibt die InetAddress eines Clusters zurÃ¼ck
      * @param x Die x-Koordinate des Clusters
      * @param y Die y-Koordinate des Clusters
-     * @return Die InetAddresse über die das Cluster zu erreichen ist
+     * @return Die InetAddress Ã¼ber die das Cluster zu erreichen ist
      */
-    InetAddress GetAddress(int x, int y);
+    InetAddress getAddress(int x, int y);
 }
